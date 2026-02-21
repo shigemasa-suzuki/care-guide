@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>介護ケアガイド</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --info: #0891b2;
+  --info-light: #cffafe;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-bottom: 70px;
+  min-height: 100vh;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  -webkit-text-size-adjust: 100%;
+}
+/* ヘッダー */
+.header {
+  background: var(--primary);
+  color: #fff;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-icon { font-size: 24px; }
+/* 下部タブバー */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  display: flex;
+  border-top: 1px solid var(--gray-200);
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--gray-500);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+.tab-btn.active { color: var(--primary); }
+.tab-btn svg { width: 24px; height: 24px; }
+/* コンテンツ */
+.tab-content { display: none; padding: 16px; }
+.tab-content.active { display: block; }
+/* 検索バー */
+.search-bar {
+  position: relative;
+  margin-bottom: 16px;
+}
+.search-bar input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 16px;
+  outline: none;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+.search-bar input:focus { border-color: var(--primary); }
+.search-bar svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--gray-500);
+}
+/* カテゴリフィルター */
+.category-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.category-filter::-webkit-scrollbar { display: none; }
+.cat-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--gray-700);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.cat-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+/* 疾患カード（一覧） */
+.disease-list { display: flex; flex-direction: column; gap: 10px; }
+.disease-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.1s;
+  border-left: 4px solid var(--primary);
+}
+.disease-card:active { transform: scale(0.98); }
+.disease-card h3 { font-size: 17px; margin-bottom: 4px; }
+.disease-card .category-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+.disease-card .overview {
+  font-size: 13px;
+  color: var(--gray-500);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* 詳細モーダル */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  justify-content: center;
+  align-items: flex-end;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding: 20px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+.modal-header h2 { font-size: 20px; }
+.modal-close {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gray-100);
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-700);
+}
+.modal-body { padding: 20px; }
+/* 詳細セクション */
+.detail-section {
+  margin-bottom: 20px;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.section-title.overview-title { background: var(--info-light); color: var(--info); }
+.section-title.med-title { background: var(--primary-light); color: var(--primary); }
+.section-title.care-title { background: var(--warning-light); color: var(--warning); }
+.section-title.emergency-title { background: var(--danger-light); color: var(--danger); }
+/* 薬カード */
+.med-card {
+  background: var(--gray-50);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--gray-200);
+}
+.med-card .med-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: var(--primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.med-card .med-row {
+  font-size: 13px;
+  margin-bottom: 4px;
+  display: flex;
+  gap: 6px;
+}
+.med-card .med-label {
+  font-weight: 600;
+  flex-shrink: 0;
+  color: var(--gray-700);
+}
+.med-card .med-value { color: var(--gray-700); }
+.med-card .side-effect {
+  color: var(--danger);
+  font-weight: 500;
+}
+/* ケアポイント */
+.care-item {
+  padding: 10px 14px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border-left: 3px solid var(--warning);
+  font-size: 14px;
+}
+.care-item .care-cat {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--warning);
+  margin-bottom: 4px;
+}
+/* 緊急対応 */
+.emergency-box {
+  background: var(--danger-light);
+  border: 2px solid var(--danger);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+}
+.emergency-box li {
+  margin-bottom: 6px;
+  margin-left: 16px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+/* 利用者管理 */
+.add-btn {
+  width: 100%;
+  padding: 14px;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 16px;
+  color: var(--primary);
+  cursor: pointer;
+  margin-bottom: 16px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.add-btn:hover { background: var(--primary-light); }
+.resident-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.resident-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+  min-width: 0;
+}
+.resident-name {
+  font-size: 18px;
+  font-weight: 700;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+.resident-meta {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+.resident-actions {
+  display: flex;
+  gap: 8px;
+}
+.resident-actions button {
+  padding: 6px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--gray-700);
+}
+.resident-actions .del-btn { color: var(--danger); border-color: var(--danger-light); }
+.resident-diseases {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--gray-100);
+}
+.resident-diseases.open { display: block; padding-top: 12px; }
+.disease-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 16px;
+  font-size: 13px;
+  margin: 4px 4px 4px 0;
+  cursor: pointer;
+}
+.disease-tag:hover { background: var(--primary); color: #fff; }
+/* 利用者フォーム モーダル */
+.form-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 300;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.form-modal-overlay.active { display: flex; }
+.form-modal {
+  background: #fff;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: fadeIn 0.2s ease;
+  -webkit-overflow-scrolling: touch;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.form-modal h2 { font-size: 20px; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--gray-700);
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--primary);
+}
+.disease-select-area {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.disease-check-item {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.disease-check-item:hover { background: var(--gray-100); }
+.disease-check-item input { width: 18px; height: 18px; accent-color: var(--primary); }
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.form-actions button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-cancel { background: var(--gray-200); color: var(--gray-700); }
+.btn-save { background: var(--primary); color: #fff; }
+/* 年齢スクロールピッカー */
+.scroll-picker {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  background: #fff;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.scroll-picker-list {
+  position: absolute;
+  width: 100%;
+  transition: transform 0.15s ease-out;
+}
+.scroll-picker-item {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--gray-300);
+  transition: color 0.15s, font-size 0.15s, font-weight 0.15s;
+  cursor: pointer;
+}
+.scroll-picker-item.selected {
+  color: var(--gray-900);
+  font-size: 26px;
+  font-weight: 700;
+}
+.scroll-picker-item.near {
+  color: var(--gray-500);
+  font-size: 20px;
+}
+.scroll-picker-highlight {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  right: 8px;
+  height: 44px;
+  transform: translateY(-50%);
+  border-top: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+  pointer-events: none;
+  border-radius: 4px;
+}
+.scroll-picker-unit {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-500);
+  pointer-events: none;
+}
+/* 利用者詳細（全病状まとめ表示） */
+.resident-summary-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 250;
+  justify-content: center;
+  align-items: flex-end;
+}
+.resident-summary-overlay.active { display: flex; }
+.resident-summary {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+.summary-header {
+  position: sticky;
+  top: 0;
+  background: var(--primary);
+  color: #fff;
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+.summary-header h2 { font-size: 20px; color: #fff; }
+.summary-close {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  font-size: 20px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.summary-body { padding: 20px; }
+.summary-disease-block {
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--gray-100);
+  padding-bottom: 20px;
+}
+.summary-disease-block:last-child { border-bottom: none; }
+.summary-disease-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary-light);
+}
+.no-data {
+  text-align: center;
+  color: var(--gray-500);
+  padding: 40px 20px;
+  font-size: 15px;
+}
+/* レスポンシブ - スマホ向け（380px以下の小型端末） */
+@media (max-width: 380px) {
+  .header { padding: 12px 14px; font-size: 16px; }
+  .header-icon { font-size: 20px; }
+  .tab-content { padding: 10px; }
+  .search-bar input { padding: 12px 12px 12px 38px; font-size: 15px; }
+  .search-bar svg { left: 12px; width: 18px; height: 18px; }
+  .cat-btn { padding: 6px 12px; font-size: 12px; }
+  .disease-card { padding: 12px; }
+  .disease-card h3 { font-size: 15px; }
+  .disease-card .overview { font-size: 12px; }
+  .disease-card .category-tag { font-size: 10px; padding: 2px 6px; }
+  .modal-header { padding: 16px; }
+  .modal-header h2 { font-size: 17px; }
+  .modal-body { padding: 14px; }
+  .section-title { font-size: 13px; padding: 6px 10px; }
+  .med-card { padding: 10px; }
+  .med-card .med-name { font-size: 14px; }
+  .med-card .med-row { font-size: 12px; flex-direction: column; gap: 2px; }
+  .med-card .med-label { font-size: 12px; }
+  .care-item { padding: 8px 10px; font-size: 13px; }
+  .care-item .care-cat { font-size: 12px; }
+  .emergency-box { padding: 10px; font-size: 13px; }
+  .emergency-box li { margin-left: 12px; }
+  .resident-header { padding: 12px; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .resident-actions { align-self: flex-end; }
+  .resident-name { font-size: 16px; }
+  .resident-meta { font-size: 12px; }
+  .form-modal { padding: 16px; }
+  .form-modal h2 { font-size: 18px; margin-bottom: 14px; }
+  .form-group input, .form-group select { padding: 10px; font-size: 15px; }
+  .form-actions button { padding: 12px; font-size: 15px; }
+  .scroll-picker { height: 160px; }
+  .summary-header { padding: 16px; }
+  .summary-header h2 { font-size: 17px; }
+  .summary-body { padding: 14px; }
+  .summary-disease-name { font-size: 16px; }
+  .add-btn { padding: 12px; font-size: 15px; }
+  .disease-select-area { max-height: 160px; }
+  .disease-check-item { padding: 6px 8px; font-size: 13px; }
+  /* 記録タブ・バイタル（小型端末） */
+  .daily-summary-card { padding: 10px; gap: 6px; }
+  .summary-item-value { font-size: 18px; }
+  .summary-item-label { font-size: 10px; }
+  .vital-summary-card { padding: 10px; }
+  .vital-item { padding: 7px 9px; }
+  .vital-item-value { font-size: 15px; }
+  .vital-values-grid { grid-template-columns: 1fr; }
+  .record-type-btn { font-size: 12px; padding: 8px 2px; }
+  .add-record-btn { padding: 12px; font-size: 15px; }
+  .add-vital-btn { padding: 10px; font-size: 14px; }
+  .record-form-modal { padding: 16px; }
+  .vital-form-modal { padding: 16px; }
+}
+/* スマホ一般（600px以下） */
+@media (max-width: 600px) {
+  .tab-bar { padding-bottom: env(safe-area-inset-bottom, 0); }
+  body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0)); }
+  .modal { max-height: calc(100vh - env(safe-area-inset-top, 0)); border-radius: 16px 16px 0 0; }
+  .resident-summary { max-height: calc(100vh - env(safe-area-inset-top, 0)); border-radius: 16px 16px 0 0; }
+  .form-modal-overlay { padding: 10px; align-items: flex-end; }
+  .form-modal { border-radius: 16px 16px 0 0; max-height: calc(90vh - env(safe-area-inset-bottom, 0)); }
+  .med-card .med-row { flex-direction: column; gap: 2px; }
+  .resident-header { flex-wrap: wrap; gap: 8px; }
+  /* 記録・バイタルモーダル */
+  .record-form-modal { border-radius: 16px 16px 0 0; max-height: calc(90vh - env(safe-area-inset-bottom, 0)); }
+  .vital-form-modal { border-radius: 16px 16px 0 0; max-height: calc(90vh - env(safe-area-inset-bottom, 0)); }
+}
+/* タブレット・PC向け */
+@media (min-width: 601px) {
+  .disease-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tab-content { max-width: 800px; margin: 0 auto; }
+}
+/* ========== 記録タブ ========== */
+.resident-selector {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 16px;
+  background: #fff;
+  margin-bottom: 12px;
+  outline: none;
+}
+.resident-selector:focus { border-color: var(--primary); }
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.date-nav-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-700);
+}
+.date-nav-label { font-weight: 700; font-size: 15px; }
+.daily-summary-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  text-align: center;
+}
+.summary-item-value { font-size: 22px; font-weight: 700; }
+.summary-item-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+.add-record-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+.record-entry {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.record-entry-icon { font-size: 22px; flex-shrink: 0; line-height: 1.4; }
+.record-entry-info { flex: 1; min-width: 0; }
+.record-entry-time { font-size: 12px; color: var(--gray-500); margin-bottom: 2px; }
+.record-entry-detail { font-size: 14px; font-weight: 600; }
+.record-entry-memo { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+.record-del-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+/* 記録フォームモーダル */
+.record-form-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 300;
+  justify-content: center;
+  align-items: flex-end;
+}
+.record-form-overlay.active { display: flex; }
+.record-form-modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+.record-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.record-type-btn {
+  flex: 1;
+  padding: 10px 4px;
+  border: 2px solid var(--gray-200);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--gray-500);
+  transition: all 0.2s;
+}
+.record-type-btn.active-bowel { background: var(--warning-light); color: var(--warning); border-color: var(--warning); }
+.record-type-btn.active-urine { background: var(--info-light); color: var(--info); border-color: var(--info); }
+.record-type-btn.active-fluid { background: var(--success-light); color: var(--success); border-color: var(--success); }
+.option-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.option-btn {
+  padding: 8px 16px;
+  border: 2px solid var(--gray-200);
+  border-radius: 20px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--gray-700);
+  transition: all 0.2s;
+}
+.option-btn.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+.record-section-fields { display: none; }
+.record-section-fields.active { display: block; }
+.record-form-modal .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+.record-form-modal .form-group { margin-bottom: 14px; }
+.record-form-modal input[type="time"],
+.record-form-modal input[type="number"],
+.record-form-modal input[type="text"],
+.record-form-modal select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+.record-form-modal input:focus,
+.record-form-modal select:focus { border-color: var(--primary); }
+/* ========== バイタルサイン ========== */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin: 18px 0 12px;
+}
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gray-200);
+}
+.vital-summary-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+.vital-summary-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.vital-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.vital-item {
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 9px 11px;
+  border-left: 3px solid var(--primary);
+}
+.vital-item-label { font-size: 11px; color: var(--gray-500); margin-bottom: 2px; }
+.vital-item-value { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+.vital-item-unit { font-size: 11px; color: var(--gray-500); margin-left: 1px; font-weight: 400; }
+.add-vital-btn {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.vital-record-entry {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.vital-record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.vital-record-time { font-size: 13px; color: var(--gray-500); font-weight: 600; }
+.vital-values-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.vital-value-chip {
+  background: var(--gray-50);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.vital-value-chip .vl { color: var(--gray-500); }
+.vital-value-chip .vv { font-weight: 700; }
+/* バイタルフォームモーダル */
+.vital-form-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 300;
+  justify-content: center;
+  align-items: flex-end;
+}
+.vital-form-overlay.active { display: flex; }
+.vital-form-modal {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+}
+.vital-form-modal .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--gray-700); }
+.vital-form-modal .form-group { margin-bottom: 14px; }
+.vital-form-modal input[type="time"],
+.vital-form-modal input[type="number"],
+.vital-form-modal input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 16px;
+  outline: none;
+}
+.vital-form-modal input:focus { border-color: var(--primary); }
+.bp-row { display: flex; align-items: center; gap: 8px; }
+.bp-row input { text-align: center; }
+.bp-sep { font-size: 22px; font-weight: 700; color: var(--gray-400); flex-shrink: 0; }
+.vital-hint { font-size: 11px; color: var(--gray-500); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-icon">&#x1F3E5;</span>
+  介護ケアガイド
+</div>
+
+<!-- 辞書タブ -->
+<div id="tab-dict" class="tab-content active">
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search-input" placeholder="病名を検索...">
+  </div>
+  <div id="category-filter" class="category-filter"></div>
+  <div id="disease-list" class="disease-list"></div>
+</div>
+
+<!-- 利用者タブ -->
+<div id="tab-residents" class="tab-content">
+  <button class="add-btn" onclick="openResidentForm()">＋ 利用者を追加</button>
+  <div id="resident-list"></div>
+</div>
+
+<!-- 記録タブ -->
+<div id="tab-record" class="tab-content">
+  <select id="record-resident-select" class="resident-selector" onchange="onRecordResidentChange()">
+    <option value="">-- 利用者を選択 --</option>
+  </select>
+  <div class="date-nav">
+    <button class="date-nav-btn" onclick="changeRecordDate(-1)">&#8249;</button>
+    <span id="record-date-label" class="date-nav-label"></span>
+    <button class="date-nav-btn" onclick="changeRecordDate(1)">&#8250;</button>
+  </div>
+  <div class="section-divider">排泄・水分</div>
+  <div class="daily-summary-card" id="record-daily-summary">
+    <div><div class="summary-item-value" style="color:var(--warning)">0回</div><div class="summary-item-label">排便</div></div>
+    <div><div class="summary-item-value" style="color:var(--info)">0回</div><div class="summary-item-label">排尿</div></div>
+    <div><div class="summary-item-value" style="color:var(--success)">0ml</div><div class="summary-item-label">水分摂取</div></div>
+  </div>
+  <button class="add-record-btn" onclick="openRecordForm()">＋ 排泄・水分を記録</button>
+  <div id="record-list"></div>
+
+  <div class="section-divider">バイタルサイン</div>
+  <div id="vital-daily-summary" class="vital-summary-card" style="display:none">
+    <div class="vital-summary-header">本日の最終値</div>
+    <div class="vital-grid">
+      <div class="vital-item" style="border-left-color:#dc2626">
+        <div class="vital-item-label">血圧</div>
+        <div class="vital-item-value" id="vs-bp">--/--</div>
+      </div>
+      <div class="vital-item" style="border-left-color:#d97706">
+        <div class="vital-item-label">体温</div>
+        <div class="vital-item-value" id="vs-temp">--<span class="vital-item-unit">°C</span></div>
+      </div>
+      <div class="vital-item" style="border-left-color:#0891b2">
+        <div class="vital-item-label">SpO₂</div>
+        <div class="vital-item-value" id="vs-spo2">--<span class="vital-item-unit">%</span></div>
+      </div>
+      <div class="vital-item" style="border-left-color:#16a34a">
+        <div class="vital-item-label">脈拍</div>
+        <div class="vital-item-value" id="vs-pulse">--<span class="vital-item-unit">bpm</span></div>
+      </div>
+    </div>
+  </div>
+  <button class="add-vital-btn" onclick="openVitalForm()">＋ バイタルを記録</button>
+  <div id="vital-list"></div>
+</div>
+
+<!-- 下部タブバー -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('dict', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    辞書
+  </button>
+  <button class="tab-btn" onclick="switchTab('residents', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    利用者
+  </button>
+  <button class="tab-btn" onclick="switchTab('record', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    記録
+  </button>
+</div>
+
+<!-- 疾患詳細モーダル -->
+<div id="disease-modal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-title"></h2>
+      <button class="modal-close" onclick="closeDiseaseModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- 利用者フォーム -->
+<div id="form-modal" class="form-modal-overlay" onclick="closeFormModal(event)">
+  <div class="form-modal" onclick="event.stopPropagation()">
+    <h2 id="form-title">利用者を追加</h2>
+    <div class="form-group">
+      <label>お名前</label>
+      <input type="text" id="resident-name-input" placeholder="例：山田 太郎">
+    </div>
+    <div class="form-group">
+      <label>年齢</label>
+      <div class="scroll-picker" id="age-picker">
+        <div class="scroll-picker-list" id="age-picker-list"></div>
+        <div class="scroll-picker-highlight"></div>
+        <div class="scroll-picker-unit">歳</div>
+      </div>
+      <input type="hidden" id="resident-age-input">
+    </div>
+    <div class="form-group">
+      <label>性別</label>
+      <select id="resident-gender-input">
+        <option value="男性">男性</option>
+        <option value="女性">女性</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>病状（複数選択可）</label>
+      <div id="disease-checkboxes" class="disease-select-area"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeFormModalDirect()">キャンセル</button>
+      <button class="btn-save" onclick="saveResident()">保存</button>
+    </div>
+    <input type="hidden" id="editing-resident-id">
+  </div>
+</div>
+
+<!-- 記録フォームモーダル -->
+<div id="record-form-modal" class="record-form-overlay" onclick="if(event.target===this)closeRecordForm()">
+  <div class="record-form-modal" onclick="event.stopPropagation()">
+    <h2 style="font-size:18px;margin-bottom:16px;">排泄・水分を記録</h2>
+    <div class="record-type-selector">
+      <button id="btn-bowel" class="record-type-btn active-bowel" onclick="setRecordType('排便')">💩 排便</button>
+      <button id="btn-urine" class="record-type-btn" onclick="setRecordType('排尿')">💧 排尿</button>
+      <button id="btn-fluid" class="record-type-btn" onclick="setRecordType('水分')">🥤 水分</button>
+    </div>
+    <div class="form-group">
+      <label>時刻</label>
+      <input type="time" id="record-time-input">
+    </div>
+    <!-- 排便フィールド -->
+    <div id="bowel-fields" class="record-section-fields active">
+      <div class="form-group">
+        <label>量</label>
+        <div id="bowel-amount" class="option-group">
+          <button class="option-btn" data-value="少" onclick="selectOption('bowel-amount','少')">少</button>
+          <button class="option-btn selected" data-value="中" onclick="selectOption('bowel-amount','中')">中</button>
+          <button class="option-btn" data-value="多" onclick="selectOption('bowel-amount','多')">多</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>性状</label>
+        <div id="bowel-condition" class="option-group">
+          <button class="option-btn selected" data-value="普通" onclick="selectOption('bowel-condition','普通')">普通</button>
+          <button class="option-btn" data-value="軟便" onclick="selectOption('bowel-condition','軟便')">軟便</button>
+          <button class="option-btn" data-value="下痢" onclick="selectOption('bowel-condition','下痢')">下痢</button>
+          <button class="option-btn" data-value="硬便" onclick="selectOption('bowel-condition','硬便')">硬便</button>
+        </div>
+      </div>
+    </div>
+    <!-- 排尿フィールド -->
+    <div id="urine-fields" class="record-section-fields">
+      <div class="form-group">
+        <label>量</label>
+        <div id="urine-amount" class="option-group">
+          <button class="option-btn" data-value="少" onclick="selectOption('urine-amount','少')">少</button>
+          <button class="option-btn selected" data-value="中" onclick="selectOption('urine-amount','中')">中</button>
+          <button class="option-btn" data-value="多" onclick="selectOption('urine-amount','多')">多</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>色調</label>
+        <div id="urine-color" class="option-group">
+          <button class="option-btn" data-value="淡黄" onclick="selectOption('urine-color','淡黄')">淡黄</button>
+          <button class="option-btn selected" data-value="黄" onclick="selectOption('urine-color','黄')">黄</button>
+          <button class="option-btn" data-value="濃黄" onclick="selectOption('urine-color','濃黄')">濃黄</button>
+          <button class="option-btn" data-value="混濁" onclick="selectOption('urine-color','混濁')">混濁</button>
+        </div>
+      </div>
+    </div>
+    <!-- 水分フィールド -->
+    <div id="fluid-fields" class="record-section-fields">
+      <div class="form-group">
+        <label>量（ml）</label>
+        <input type="number" id="fluid-amount-input" placeholder="例：200" min="0" max="2000">
+      </div>
+      <div class="form-group">
+        <label>種類</label>
+        <select id="fluid-type-input">
+          <option value="水">水</option>
+          <option value="お茶">お茶</option>
+          <option value="牛乳">牛乳</option>
+          <option value="ジュース">ジュース</option>
+          <option value="スープ">スープ</option>
+          <option value="経口補水液">経口補水液</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>メモ（任意）</label>
+      <input type="text" id="record-memo-input" placeholder="気になることがあれば...">
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeRecordForm()">キャンセル</button>
+      <button class="btn-save" onclick="saveRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- バイタルフォームモーダル -->
+<div id="vital-form-modal" class="vital-form-overlay" onclick="if(event.target===this)closeVitalForm()">
+  <div class="vital-form-modal" onclick="event.stopPropagation()">
+    <h2 style="font-size:18px;margin-bottom:16px;">&#x1FA7A; バイタルサインを記録</h2>
+    <div class="form-group">
+      <label>時刻</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="time" id="vital-time-input" style="flex:1;">
+        <button type="button" onclick="document.getElementById('vital-time-input').value=recordFormatTimeNow()" style="flex-shrink:0;padding:10px 12px;border:2px solid var(--primary);border-radius:8px;background:#fff;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">現在の時刻</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>血圧（mmHg）</label>
+      <div class="bp-row">
+        <input type="number" id="vital-bp-sys" placeholder="収縮期" min="50" max="300" inputmode="numeric">
+        <span class="bp-sep">/</span>
+        <input type="number" id="vital-bp-dia" placeholder="拡張期" min="20" max="200" inputmode="numeric">
+      </div>
+      <div class="vital-hint">例：120 / 80（空欄でもOK）</div>
+    </div>
+    <div class="form-group">
+      <label>体温（°C）</label>
+      <input type="number" id="vital-temp" placeholder="例：36.8" min="34" max="42" step="0.1" inputmode="decimal">
+      <div class="vital-hint">小数点第1位まで入力可</div>
+    </div>
+    <div class="form-group">
+      <label>SpO₂（%）</label>
+      <input type="number" id="vital-spo2" placeholder="例：98" min="50" max="100" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>脈拍（bpm）</label>
+      <input type="number" id="vital-pulse" placeholder="例：72" min="20" max="250" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>メモ（任意）</label>
+      <input type="text" id="vital-memo-input" placeholder="気になることがあれば...">
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeVitalForm()">キャンセル</button>
+      <button class="btn-save" onclick="saveVital()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 利用者サマリーモーダル -->
+<div id="summary-modal" class="resident-summary-overlay" onclick="closeSummaryModal(event)">
+  <div class="resident-summary" onclick="event.stopPropagation()">
+    <div class="summary-header">
+      <h2 id="summary-title"></h2>
+      <button class="summary-close" onclick="closeSummaryModalDirect()">&times;</button>
+    </div>
+    <div class="summary-body" id="summary-body"></div>
+  </div>
+</div>
+
+<script>
+// ========== 疾患データ ==========
+const DISEASES = [
+  {
+    id: "hypertension",
+    name: "高血圧",
+    category: "循環器",
+    overview: "血圧が慢性的に高い状態。脳卒中や心臓病のリスクを高める。高齢者では起立性低血圧にも注意が必要。",
+    medications: [
+      { name: "アムロジピン（ノルバスク）", purpose: "カルシウム拮抗薬。血管を広げて血圧を下げる", sideEffects: "むくみ、ほてり、めまい、動悸", notes: "グレープフルーツジュースとの併用を避ける" },
+      { name: "カンデサルタン（ブロプレス）", purpose: "ARB。血圧を下げ、心臓や腎臓を保護する", sideEffects: "めまい、高カリウム血症、腎機能低下", notes: "腎機能の定期チェックが必要" },
+      { name: "フロセミド（ラシックス）", purpose: "利尿薬。余分な水分を排出して血圧を下げる", sideEffects: "脱水、低カリウム血症、めまい", notes: "朝に服用（夜間頻尿を避ける）。水分・電解質の管理" }
+    ],
+    carePoints: [
+      { category: "バイタル", detail: "毎日同じ時間に血圧測定。起床時と就寝前の2回が理想" },
+      { category: "食事", detail: "減塩食（1日6g以下目標）。カリウムの多い野菜・果物を適度に摂取" },
+      { category: "運動", detail: "急な立ち上がりを避ける。起立性低血圧に注意" },
+      { category: "入浴", detail: "湯温40℃以下。長湯を避ける。脱衣所と浴室の温度差に注意" },
+      { category: "観察", detail: "頭痛、めまい、ふらつき、鼻出血の有無を確認" }
+    ],
+    emergency: ["血圧180/110以上が持続する場合は医療機関に連絡", "激しい頭痛・嘔吐・意識障害があれば救急要請", "転倒後の意識変容にも注意"]
+  },
+  {
+    id: "diabetes",
+    name: "糖尿病",
+    category: "内分泌",
+    overview: "インスリンの不足や作用低下により血糖が慢性的に高くなる。合併症（神経障害・網膜症・腎症）の管理が重要。",
+    medications: [
+      { name: "メトホルミン（メトグルコ）", purpose: "肝臓からの糖放出を抑え、インスリン感受性を高める", sideEffects: "下痢、吐き気、乳酸アシドーシス（まれ）", notes: "造影検査前後は休薬。腎機能に注意" },
+      { name: "グリメピリド（アマリール）", purpose: "膵臓からインスリン分泌を促進", sideEffects: "低血糖、体重増加", notes: "食事を抜くと低血糖リスク増大。必ず食直前に服用" },
+      { name: "インスリン注射", purpose: "不足するインスリンを補充", sideEffects: "低血糖、注射部位の硬結", notes: "注射部位のローテーション。保管温度の管理" }
+    ],
+    carePoints: [
+      { category: "バイタル", detail: "血糖値の定期測定。低血糖症状（冷汗・震え・動悸）の観察" },
+      { category: "食事", detail: "食事量・時間の規則正しさが重要。間食の管理。炭水化物量の把握" },
+      { category: "フットケア", detail: "毎日足の観察（傷・水疱・変色）。爪切りは慎重に。靴擦れに注意" },
+      { category: "運動", detail: "食後の軽い運動が血糖管理に効果的。低血糖に備えブドウ糖を携帯" },
+      { category: "皮膚", detail: "皮膚の乾燥・感染に注意。保湿ケアを日常的に行う" }
+    ],
+    emergency: ["意識レベル低下・冷汗・痙攣（重症低血糖）→ブドウ糖投与し救急要請", "高血糖による口渇・多尿・意識障害→医療機関に連絡", "足の壊疽・急な視力低下→速やかに受診"]
+  },
+  {
+    id: "heart_failure",
+    name: "心不全",
+    category: "循環器",
+    overview: "心臓のポンプ機能が低下し全身に十分な血液を送れない状態。息切れ・むくみ・疲労感が特徴。",
+    medications: [
+      { name: "エナラプリル（レニベース）", purpose: "ACE阻害薬。心臓の負担を軽減", sideEffects: "空咳、めまい、高カリウム血症", notes: "咳が出やすいがすぐに中止せず医師に相談" },
+      { name: "ビソプロロール（メインテート）", purpose: "β遮断薬。心拍数を抑え心臓を保護", sideEffects: "徐脈、倦怠感、低血圧", notes: "急な中止は禁忌。脈拍50以下は報告" },
+      { name: "スピロノラクトン（アルダクトン）", purpose: "利尿薬。むくみを軽減し心臓を保護", sideEffects: "高カリウム血症、女性化乳房", notes: "カリウム値の定期モニタリング" }
+    ],
+    carePoints: [
+      { category: "バイタル", detail: "毎日の体重測定（同じ時間・条件で）。1日で1kg以上増加は要報告" },
+      { category: "水分", detail: "水分制限がある場合は指示量を厳守。飲水量の記録" },
+      { category: "食事", detail: "塩分制限（1日6g以下）。栄養バランスの確保" },
+      { category: "活動", detail: "過度な運動を避ける。息切れの程度に応じた活動量の調整" },
+      { category: "観察", detail: "下肢のむくみ、夜間の呼吸困難、起座呼吸の有無を確認" }
+    ],
+    emergency: ["急激な呼吸困難・起座呼吸→上体を起こし救急要請", "ピンク色の泡状痰（肺水腫）→緊急通報", "体重が2-3日で2kg以上増加→医師に連絡"]
+  },
+  {
+    id: "stroke_sequelae",
+    name: "脳卒中後遺症",
+    category: "脳神経",
+    overview: "脳梗塞や脳出血後の麻痺・言語障害・嚥下障害などが残存する状態。再発予防とリハビリが重要。",
+    medications: [
+      { name: "クロピドグレル（プラビックス）", purpose: "抗血小板薬。血栓形成を予防", sideEffects: "出血傾向、消化管出血、皮下出血", notes: "転倒時の出血リスク増大。歯科処置前は医師に報告" },
+      { name: "ワルファリン（ワーファリン）", purpose: "抗凝固薬。心房細動による脳梗塞を予防", sideEffects: "出血、皮下出血", notes: "納豆・クロレラ・青汁は禁止（ビタミンKで効果減弱）。定期的にPT-INR検査" },
+      { name: "バクロフェン（リオレサール）", purpose: "筋弛緩薬。痙性麻痺を軽減", sideEffects: "眠気、ふらつき、筋力低下", notes: "急な中止は禁忌。段階的に減量" }
+    ],
+    carePoints: [
+      { category: "移動", detail: "麻痺側を守る移乗介助。転倒予防の環境整備" },
+      { category: "嚥下", detail: "嚥下機能の評価に基づいた食形態の選択。食事中の姿勢保持（30度以上）" },
+      { category: "コミュニケーション", detail: "失語症がある場合はゆっくり・短く話す。非言語的コミュニケーションの活用" },
+      { category: "リハビリ", detail: "日常生活動作の中でのリハビリ実施。関節可動域の維持" },
+      { category: "観察", detail: "再発兆候（急な麻痺・呂律障害・激しい頭痛）の監視" }
+    ],
+    emergency: ["FAST：顔の歪み(Face)・腕の脱力(Arm)・言葉の異常(Speech)→Time(時間)を記録し救急要請", "突然の激しい頭痛・嘔吐→脳出血の可能性あり、救急要請", "意識レベルの急な低下→救急要請"]
+  },
+  {
+    id: "alzheimer",
+    name: "認知症（アルツハイマー型）",
+    category: "脳神経",
+    overview: "脳の萎縮により記憶力・判断力が徐々に低下する進行性疾患。早期は物忘れ、進行すると日常生活全般に支障。",
+    medications: [
+      { name: "ドネペジル（アリセプト）", purpose: "コリンエステラーゼ阻害薬。認知機能の低下を遅らせる", sideEffects: "吐き気、下痢、食欲低下、不眠", notes: "消化器症状は初期に多い。少量から開始" },
+      { name: "メマンチン（メマリー）", purpose: "NMDA受容体拮抗薬。中等度〜重度に使用", sideEffects: "めまい、頭痛、便秘、眠気", notes: "腎機能低下時は減量が必要" },
+      { name: "抑肝散", purpose: "漢方薬。興奮・不穏・不眠の緩和", sideEffects: "低カリウム血症、偽アルドステロン症", notes: "長期服用時はカリウム値をチェック" }
+    ],
+    carePoints: [
+      { category: "環境", detail: "生活環境の統一性を保つ。大きな変化を避ける。見当識を助ける工夫（時計・カレンダーの設置）" },
+      { category: "コミュニケーション", detail: "否定せず受容的に対応。短い文で穏やかに話す。選択肢は2つまで" },
+      { category: "安全", detail: "徘徊対策（センサー・GPS）。火の元・刃物の管理。転倒予防" },
+      { category: "食事", detail: "食べ忘れ・過食の確認。好みや習慣を尊重した食事提供" },
+      { category: "排泄", detail: "トイレの場所をわかりやすく表示。排泄パターンの把握と声かけ誘導" }
+    ],
+    emergency: ["行方不明（徘徊）→速やかに捜索体制。警察に届出", "異食行動（食べられないものを口にする）→口腔内確認。誤飲の場合は医療機関へ", "急な意識障害・けいれん→救急要請"]
+  },
+  {
+    id: "lewy_body",
+    name: "認知症（レビー小体型）",
+    category: "脳神経",
+    overview: "幻視・パーキンソン症状・認知機能の変動が特徴。薬剤への過敏性が高く、薬の管理に特に注意が必要。",
+    medications: [
+      { name: "ドネペジル（アリセプト）", purpose: "認知機能の維持。幻視にも効果あり", sideEffects: "吐き気、下痢、パーキンソン症状の悪化の可能性", notes: "少量から慎重に開始" },
+      { name: "レボドパ（マドパー等）", purpose: "パーキンソン症状の緩和", sideEffects: "幻視の悪化、起立性低血圧、嘔気", notes: "幻視と運動症状のバランスを見ながら調整" },
+      { name: "抑肝散", purpose: "幻視・興奮の緩和", sideEffects: "低カリウム血症", notes: "定期的な電解質チェック" }
+    ],
+    carePoints: [
+      { category: "幻視対応", detail: "幻視を否定せず安心感を与える対応。照明を明るくし影を減らす" },
+      { category: "転倒予防", detail: "パーキンソン症状による転倒リスクが高い。すくみ足への対応" },
+      { category: "薬剤管理", detail: "抗精神病薬に過敏（重篤な副作用リスク）。新しい薬の開始時は慎重に観察" },
+      { category: "睡眠", detail: "レム睡眠行動障害（寝言・暴れる）に注意。ベッド周りの安全確保" },
+      { category: "観察", detail: "認知機能の日内変動。「良い時」と「悪い時」の差が大きい" }
+    ],
+    emergency: ["抗精神病薬投与後の高熱・筋硬直→悪性症候群の可能性、救急要請", "転倒による骨折の疑い→動かさず救急要請", "急激な意識レベル低下→医療機関に連絡"]
+  },
+  {
+    id: "parkinson",
+    name: "パーキンソン病",
+    category: "脳神経",
+    overview: "ドパミン神経の変性により振戦・筋固縮・動作緩慢・姿勢反射障害が起こる進行性疾患。",
+    medications: [
+      { name: "レボドパ/カルビドパ（メネシット）", purpose: "不足するドパミンを補充する中心的治療薬", sideEffects: "嘔気、起立性低血圧、ジスキネジア（不随意運動）", notes: "服用時間を厳守。タンパク質と同時摂取で吸収低下" },
+      { name: "プラミペキソール（ビ・シフロール）", purpose: "ドパミン受容体作動薬", sideEffects: "眠気、突発的睡眠、浮腫、衝動制御障害", notes: "日中の強い眠気に注意。運転禁止" },
+      { name: "セレギリン（エフピー）", purpose: "MAO-B阻害薬。ドパミン分解を抑制", sideEffects: "不眠、口渇、便秘", notes: "チーズ・赤ワインなどチラミン含有食品に注意" }
+    ],
+    carePoints: [
+      { category: "服薬", detail: "服薬時間の厳守が最重要。オフ時間とオン時間の記録" },
+      { category: "転倒予防", detail: "すくみ足への対応（リズムをつける、線をまたぐ）。方向転換時は特に注意" },
+      { category: "食事", detail: "嚥下障害に注意。食事姿勢の確保。むせの観察" },
+      { category: "排泄", detail: "便秘になりやすい。水分摂取と食物繊維の確保" },
+      { category: "活動", detail: "できることは自分で行ってもらう。過介護を避ける。リハビリの継続" }
+    ],
+    emergency: ["悪性症候群（高熱・筋硬直・意識障害）→薬の急な中止が原因の可能性、救急要請", "転倒・骨折→救急要請", "誤嚥による窒息→吸引・ハイムリック法→救急要請"]
+  },
+  {
+    id: "osteoporosis",
+    name: "骨粗鬆症",
+    category: "運動器",
+    overview: "骨密度が低下し骨折しやすくなる疾患。特に大腿骨頸部骨折・脊椎圧迫骨折のリスクが高い。",
+    medications: [
+      { name: "アレンドロネート（ボナロン）", purpose: "ビスホスホネート。骨吸収を抑制", sideEffects: "食道炎、胃腸障害、顎骨壊死（まれ）", notes: "起床時に水180mLで服用。服用後30分は横にならない・飲食しない" },
+      { name: "デノスマブ（プラリア）", purpose: "6ヶ月に1回の皮下注射。骨吸収を強力に抑制", sideEffects: "低カルシウム血症、顎骨壊死", notes: "カルシウム・ビタミンDの補充が必須" },
+      { name: "エルデカルシトール（エディロール）", purpose: "活性型ビタミンD3。カルシウム吸収を促進", sideEffects: "高カルシウム血症", notes: "定期的な血中カルシウム値チェック" }
+    ],
+    carePoints: [
+      { category: "転倒予防", detail: "環境整備（段差・滑りやすい床の除去）。適切な靴の選択。手すりの設置" },
+      { category: "食事", detail: "カルシウム・ビタミンD・ビタミンKの摂取。乳製品・小魚・緑黄色野菜" },
+      { category: "運動", detail: "荷重運動（歩行・立位バランス訓練）が骨密度維持に有効" },
+      { category: "移乗", detail: "骨折リスクを考慮した安全な移乗介助。無理な体位変換を避ける" },
+      { category: "観察", detail: "背中の痛み（圧迫骨折）、身長の低下、円背の進行" }
+    ],
+    emergency: ["転倒後の強い痛み・動かせない→骨折の疑い、動かさず救急要請", "大腿部の痛み・歩行不能→大腿骨骨折の可能性、救急要請", "急な腰背部痛→脊椎圧迫骨折の可能性、医療機関に連絡"]
+  },
+  {
+    id: "rheumatoid",
+    name: "関節リウマチ",
+    category: "運動器",
+    overview: "自己免疫疾患により関節に慢性的な炎症が生じ、痛み・腫れ・変形を引き起こす。朝のこわばりが特徴。",
+    medications: [
+      { name: "メトトレキサート（リウマトレックス）", purpose: "免疫抑制薬。リウマチ治療の中心薬", sideEffects: "口内炎、肝障害、骨髄抑制、間質性肺炎", notes: "週1回の服用（毎日ではない）。葉酸の補充。感染症に注意" },
+      { name: "プレドニゾロン（プレドニン）", purpose: "ステロイド。炎症を強力に抑制", sideEffects: "骨粗鬆症、糖尿病、感染症、胃潰瘍", notes: "急な中止は禁忌。副腎不全のリスク" },
+      { name: "生物学的製剤（エンブレル等）", purpose: "TNFα等を標的とした免疫調節薬", sideEffects: "感染症リスク増大、注射部位反応", notes: "感染兆候（発熱・咳・排尿痛等）の早期発見が重要" }
+    ],
+    carePoints: [
+      { category: "関節保護", detail: "朝のこわばり時は無理に動かさない。関節に負担の少ない動作の工夫" },
+      { category: "食事", detail: "抗炎症作用のある食事（魚油・野菜）。ステロイド使用時は骨粗鬆症対策も" },
+      { category: "感染予防", detail: "免疫抑制薬使用中は感染リスク増大。手洗い・うがいの徹底。発熱時は速やかに報告" },
+      { category: "自助具", detail: "関節変形に応じた自助具の活用。太柄のスプーン・ペットボトルオープナー等" },
+      { category: "観察", detail: "関節の腫れ・熱感の変化。朝のこわばりの持続時間の記録" }
+    ],
+    emergency: ["高熱（38℃以上）→免疫抑制中の感染症、速やかに医療機関へ", "急な息苦しさ・空咳→間質性肺炎の可能性、救急要請", "関節の急な腫脹・発赤→化膿性関節炎の可能性、医療機関へ"]
+  },
+  {
+    id: "ckd",
+    name: "慢性腎臓病（CKD）",
+    category: "内科",
+    overview: "腎機能が慢性的に低下する状態。進行すると透析が必要になる。食事・薬の管理が非常に重要。",
+    medications: [
+      { name: "ARB/ACE阻害薬", purpose: "腎保護作用のある降圧薬", sideEffects: "高カリウム血症、腎機能の一時的低下", notes: "腎機能と電解質の定期モニタリング" },
+      { name: "球形吸着炭（クレメジン）", purpose: "尿毒素を吸着し腎臓への負担を軽減", sideEffects: "便秘、食欲低下", notes: "他の薬と2時間以上あけて服用" },
+      { name: "エリスロポエチン製剤", purpose: "腎性貧血の治療", sideEffects: "血圧上昇、血栓症", notes: "ヘモグロビン値の定期チェック" }
+    ],
+    carePoints: [
+      { category: "食事", detail: "タンパク質制限・塩分制限・カリウム制限（ステージによる）。栄養士の指導に従う" },
+      { category: "水分", detail: "水分制限がある場合は指示量を厳守。尿量の記録" },
+      { category: "薬", detail: "腎排泄の薬は用量調整が必要。NSAIDs（鎮痛薬）は腎障害を悪化させるため禁忌" },
+      { category: "観察", detail: "むくみ・尿量減少・倦怠感・食欲低下の観察" },
+      { category: "シャント管理", detail: "透析患者の場合、シャント側の腕で血圧測定・採血をしない。シャント音の確認" }
+    ],
+    emergency: ["尿量が極端に減少→急性腎不全の可能性、医療機関に連絡", "高カリウム血症の症状（しびれ・筋力低下・不整脈）→救急要請", "シャント閉塞（音が聞こえない）→速やかに医療機関へ"]
+  },
+  {
+    id: "copd",
+    name: "COPD（慢性閉塞性肺疾患）",
+    category: "呼吸器",
+    overview: "喫煙等により気道が慢性的に狭窄・閉塞する疾患。呼吸困難・咳・痰が主症状。感染による急性増悪に注意。",
+    medications: [
+      { name: "チオトロピウム（スピリーバ）", purpose: "長時間作用型抗コリン薬。気管支を拡張", sideEffects: "口渇、便秘、排尿困難", notes: "吸入後はうがいを行う。前立腺肥大・緑内障の方は注意" },
+      { name: "サルメテロール/フルチカゾン（アドエア）", purpose: "気管支拡張薬＋吸入ステロイドの配合剤", sideEffects: "口腔カンジダ、嗄声", notes: "吸入後の含嗽（うがい）を徹底" },
+      { name: "在宅酸素療法（HOT）", purpose: "不足する酸素を補充", sideEffects: "CO2ナルコーシス（高濃度酸素投与時）", notes: "指示された酸素流量を厳守。火気厳禁" }
+    ],
+    carePoints: [
+      { category: "呼吸", detail: "口すぼめ呼吸の指導。腹式呼吸の練習。呼吸困難時の体位（起座位・前傾位）" },
+      { category: "吸入指導", detail: "正しい吸入手技の確認。吸入後のうがいの徹底" },
+      { category: "感染予防", detail: "インフルエンザ・肺炎球菌ワクチン接種。手洗い・うがいの徹底" },
+      { category: "栄養", detail: "痩せが多い。高カロリー・高タンパクの食事。少量頻回食" },
+      { category: "酸素管理", detail: "HOT使用時は酸素流量を勝手に変えない。SpO2の定期測定" }
+    ],
+    emergency: ["呼吸困難の急激な悪化→急性増悪、救急要請", "SpO2が90%以下に低下→医療機関に連絡", "意識障害を伴う呼吸不全→CO2ナルコーシスの可能性、救急要請"]
+  },
+  {
+    id: "aspiration_pneumonia",
+    name: "誤嚥性肺炎",
+    category: "呼吸器",
+    overview: "飲食物や唾液が気管に入り込むことで起こる肺炎。高齢者の死因上位。嚥下機能の低下が主な原因。",
+    medications: [
+      { name: "抗菌薬（アンピシリン/スルバクタム等）", purpose: "肺炎の原因菌を治療", sideEffects: "下痢、アレルギー反応、菌交代症", notes: "投与期間を守る。症状改善後も指示通り継続" },
+      { name: "ACE阻害薬（副次的効果）", purpose: "咳反射を高め誤嚥予防に寄与", sideEffects: "空咳（この場合は有益）", notes: "嚥下機能低下のある高血圧患者に優先的に選択" },
+      { name: "半夏厚朴湯", purpose: "漢方薬。嚥下反射の改善", sideEffects: "胃部不快感（まれ）", notes: "食前に服用。とろみをつけて服用可" }
+    ],
+    carePoints: [
+      { category: "食事姿勢", detail: "上体30-60度挙上。顎を引いた姿勢。食後30分は上体を起こしたまま" },
+      { category: "食形態", detail: "嚥下評価に基づいた食形態の選択（きざみ・ソフト・ゼリー・とろみ）" },
+      { category: "口腔ケア", detail: "毎食後の口腔ケアが最重要の予防策。就寝前も必ず実施" },
+      { category: "観察", detail: "むせ・湿性嗄声・食事時間の延長・発熱・SpO2低下の監視" },
+      { category: "夜間", detail: "就寝時の体位（上体挙上または側臥位）。唾液の不顕性誤嚥の予防" }
+    ],
+    emergency: ["38℃以上の発熱＋咳・痰→肺炎再発の疑い、医療機関に連絡", "食事中の窒息→吸引・背部叩打・ハイムリック法→救急要請", "SpO2が90%以下→医療機関に連絡"]
+  },
+  {
+    id: "pressure_ulcer",
+    name: "褥瘡（じょくそう）",
+    category: "皮膚",
+    overview: "持続的な圧迫により皮膚や組織が壊死する状態。仙骨部・踵・大転子部に好発。予防が最も重要。",
+    medications: [
+      { name: "ゲーベンクリーム（スルファジアジン銀）", purpose: "感染を伴う褥瘡の治療。抗菌作用", sideEffects: "皮膚刺激、アレルギー反応", notes: "厚く塗布。ガーゼで被覆" },
+      { name: "フィブラストスプレー（bFGF製剤）", purpose: "肉芽形成を促進し治癒を助ける", sideEffects: "刺激痛", notes: "壊死組織除去後の清潔な創面に使用" },
+      { name: "各種ドレッシング材", purpose: "創面を適切な湿潤環境に保つ", sideEffects: "皮膚かぶれ（粘着部）", notes: "褥瘡の深さ・滲出液の量に応じて選択" }
+    ],
+    carePoints: [
+      { category: "体位変換", detail: "2時間ごとの体位変換が基本。体圧分散マットレスの使用" },
+      { category: "皮膚観察", detail: "毎日の皮膚観察。発赤部位を指で押して白くならなければ褥瘡の初期" },
+      { category: "栄養", detail: "タンパク質・亜鉛・ビタミンCの十分な摂取が治癒に不可欠" },
+      { category: "清潔", detail: "皮膚の清潔保持。おむつ交換の迅速化。保湿剤の使用" },
+      { category: "除圧", detail: "車椅子でも15分ごとに除圧（プッシュアップ）。踵は浮かせる" }
+    ],
+    emergency: ["創部の発赤・腫脹・熱感・悪臭→感染徴候、医療機関に連絡", "発熱＋褥瘡の急速な悪化→敗血症の可能性、救急要請", "壊死組織からの大量出血→圧迫止血し医療機関に連絡"]
+  },
+  // ===== 循環器 追加 =====
+  {
+    id: "atrial_fibrillation",
+    name: "心房細動",
+    category: "循環器",
+    overview: "心房が不規則に震え、脈が乱れる不整脈。脳梗塞のリスクが高く、抗凝固療法が重要。高齢者に多い。",
+    medications: [
+      { name: "リバーロキサバン（イグザレルト）", purpose: "DOAC。血栓形成を予防し脳梗塞を防ぐ", sideEffects: "出血傾向、消化管出血", notes: "食後に服用。腎機能に応じた用量調整" },
+      { name: "エドキサバン（リクシアナ）", purpose: "DOAC。抗凝固療法", sideEffects: "出血、貧血、肝機能障害", notes: "1日1回服用。体重・腎機能で用量決定" },
+      { name: "ビソプロロール（メインテート）", purpose: "β遮断薬。心拍数をコントロール", sideEffects: "徐脈、倦怠感、低血圧", notes: "脈拍50以下は報告。急な中止は禁忌" }
+    ],
+    carePoints: [
+      { category: "バイタル", detail: "脈拍の不整・頻脈の確認。血圧と脈拍を同時に測定" },
+      { category: "出血管理", detail: "抗凝固薬服用中のため出血に注意。歯磨き時の出血・皮下出血・血尿の観察" },
+      { category: "転倒予防", detail: "めまい・ふらつきによる転倒リスク。出血時の重症化防止" },
+      { category: "服薬", detail: "抗凝固薬の飲み忘れ・重複服用を防ぐ。お薬カレンダーの活用" },
+      { category: "観察", detail: "動悸・息切れ・胸部不快感の有無。脳梗塞の兆候（FAST）の監視" }
+    ],
+    emergency: ["脳梗塞兆候（顔の歪み・片腕脱力・言葉の異常）→時間を記録し救急要請", "大量出血（吐血・下血・大量の鼻出血）→圧迫止血し救急要請", "意識消失・失神→救急要請"]
+  },
+  {
+    id: "angina",
+    name: "狭心症",
+    category: "循環器",
+    overview: "冠動脈の狭窄により心筋への血流が不足し、胸痛や圧迫感が生じる。労作時に起こりやすい。",
+    medications: [
+      { name: "ニトログリセリン（ニトロペン）", purpose: "発作時の舌下錠。冠動脈を拡張し胸痛を緩和", sideEffects: "頭痛、血圧低下、めまい", notes: "舌下投与。5分間隔で最大3回まで。効かなければ救急要請" },
+      { name: "アスピリン（バイアスピリン）", purpose: "抗血小板薬。血栓予防", sideEffects: "消化管出血、胃潰瘍", notes: "食後に服用。出血傾向に注意" },
+      { name: "アテノロール（テノーミン）", purpose: "β遮断薬。心臓の負担を軽減", sideEffects: "徐脈、冷感、倦怠感", notes: "急な中止は禁忌。脈拍管理" }
+    ],
+    carePoints: [
+      { category: "発作対応", detail: "ニトロペンを常に携帯させる。使用期限・保管場所の確認" },
+      { category: "活動", detail: "過度な労作を避ける。寒冷刺激・急な動作に注意" },
+      { category: "入浴", detail: "湯温40℃以下。長湯を避ける。脱衣所を暖かくする" },
+      { category: "食事", detail: "脂質・塩分の制限。禁煙の徹底" },
+      { category: "観察", detail: "胸痛の頻度・持続時間・誘因の記録。安静時発作は特に注意" }
+    ],
+    emergency: ["胸痛がニトロ3回で改善しない→心筋梗塞の疑い、救急要請", "冷汗を伴う激しい胸痛→救急要請", "意識消失→心停止の可能性、AED準備し救急要請"]
+  },
+  // ===== 内分泌 追加 =====
+  {
+    id: "hypothyroidism",
+    name: "甲状腺機能低下症",
+    category: "内分泌",
+    overview: "甲状腺ホルモンの分泌が不足し、代謝が低下する疾患。倦怠感・寒がり・むくみ・便秘・体重増加が特徴。高齢者では認知症と間違われることもある。",
+    medications: [
+      { name: "レボチロキシン（チラーヂンS）", purpose: "不足する甲状腺ホルモンを補充", sideEffects: "過量で動悸・頻脈・発汗・体重減少", notes: "朝食前の空腹時に服用。他の薬と30分以上あける" },
+    ],
+    carePoints: [
+      { category: "服薬", detail: "毎朝同じ時間に空腹で服用。カルシウム剤・鉄剤とは時間をあける" },
+      { category: "観察", detail: "倦怠感・寒がり・むくみ・便秘・体重変化の記録" },
+      { category: "体温管理", detail: "寒がりが強い。室温管理と衣類の調整" },
+      { category: "活動", detail: "倦怠感が強い時は無理をさせない。活動量の調整" },
+      { category: "皮膚", detail: "乾燥しやすい。保湿ケアの実施" }
+    ],
+    emergency: ["粘液水腫性昏睡（低体温・意識障害・呼吸低下）→救急要請", "急な意識レベル低下→医療機関に連絡", "高度な徐脈→医療機関に連絡"]
+  },
+  {
+    id: "gout",
+    name: "痛風・高尿酸血症",
+    category: "内分泌",
+    overview: "血中の尿酸値が高くなり、関節に尿酸結晶が沈着して激しい痛みを起こす。足の親指の付け根に好発。腎障害にも注意。",
+    medications: [
+      { name: "フェブキソスタット（フェブリク）", purpose: "尿酸生成を抑制し尿酸値を下げる", sideEffects: "肝機能障害、関節痛（初期）", notes: "急な尿酸低下で発作が起きることがある。少量から開始" },
+      { name: "コルヒチン", purpose: "痛風発作の予防・初期治療", sideEffects: "下痢、嘔気、腹痛", notes: "発作の前兆時に1錠服用。大量投与は禁忌" },
+      { name: "ロキソプロフェン（ロキソニン）", purpose: "発作時の消炎鎮痛", sideEffects: "胃潰瘍、腎障害", notes: "腎機能低下者には注意。短期間使用" }
+    ],
+    carePoints: [
+      { category: "食事", detail: "プリン体の多い食品（レバー・干物・ビール）を控える。水分を十分に摂取" },
+      { category: "飲水", detail: "1日2L以上の水分摂取が目標。尿酸の排泄を促進" },
+      { category: "観察", detail: "関節の腫れ・発赤・熱感の観察。発作の部位と頻度の記録" },
+      { category: "活動", detail: "発作時は安静。患部を冷やす。荷重を避ける" },
+      { category: "合併症", detail: "腎機能の定期チェック。尿路結石の症状（腰背部痛・血尿）に注意" }
+    ],
+    emergency: ["激しい関節痛で動けない→医療機関に連絡", "腰背部の激痛・血尿（尿路結石）→医療機関に連絡", "発熱を伴う関節の腫脹→化膿性関節炎の鑑別が必要、医療機関へ"]
+  },
+  // ===== 消化器 =====
+  {
+    id: "gastric_ulcer",
+    name: "胃潰瘍・十二指腸潰瘍",
+    category: "消化器",
+    overview: "胃酸により胃や十二指腸の粘膜が深く傷つく疾患。NSAIDs（鎮痛薬）の長期使用やピロリ菌が原因。高齢者では症状が乏しいことがある。",
+    medications: [
+      { name: "ランソプラゾール（タケプロン）", purpose: "PPI。胃酸分泌を強力に抑制", sideEffects: "下痢、頭痛、骨折リスク（長期）", notes: "朝食前に服用。長期使用時は骨密度に注意" },
+      { name: "レバミピド（ムコスタ）", purpose: "胃粘膜を保護し修復を促進", sideEffects: "下痢、発疹（まれ）", notes: "NSAIDs使用時の胃粘膜保護に併用" },
+      { name: "ボノプラザン（タケキャブ）", purpose: "P-CAB。より強力な酸分泌抑制", sideEffects: "下痢、便秘、肝機能異常", notes: "ピロリ除菌療法にも使用" }
+    ],
+    carePoints: [
+      { category: "食事", detail: "刺激物（辛いもの・カフェイン・アルコール）を避ける。規則正しい食事時間" },
+      { category: "薬", detail: "NSAIDs（ロキソニン等）の使用に注意。必ず胃薬を併用" },
+      { category: "観察", detail: "腹痛・胸やけ・黒色便・嘔気の有無を確認" },
+      { category: "ストレス", detail: "ストレスが増悪因子。生活リズムの安定と環境調整" },
+      { category: "服薬", detail: "PPI/P-CABは朝食前服用。自己判断での中止を避ける" }
+    ],
+    emergency: ["吐血（コーヒー残渣様の嘔吐）→消化管出血、救急要請", "タール便（黒色の便）＋めまい・冷汗→出血性ショックの可能性、救急要請", "突然の激しい腹痛（穿孔の疑い）→救急要請"]
+  },
+  {
+    id: "liver_cirrhosis",
+    name: "肝硬変",
+    category: "消化器",
+    overview: "慢性的な肝障害により肝臓が線維化・硬化する疾患。腹水・黄疸・肝性脳症・食道静脈瘤などの合併症に注意。",
+    medications: [
+      { name: "フロセミド（ラシックス）", purpose: "利尿薬。腹水・むくみの軽減", sideEffects: "脱水、低カリウム血症、腎機能悪化", notes: "電解質バランスの定期チェック。体重で効果判定" },
+      { name: "スピロノラクトン（アルダクトン）", purpose: "カリウム保持性利尿薬。腹水治療の基本薬", sideEffects: "高カリウム血症、女性化乳房", notes: "フロセミドと併用が多い" },
+      { name: "ラクツロース（モニラック）", purpose: "腸内アンモニア産生を抑え肝性脳症を予防", sideEffects: "下痢、腹部膨満感", notes: "排便回数で用量調整。1日2-3回の軟便が目標" }
+    ],
+    carePoints: [
+      { category: "食事", detail: "タンパク質の適正量管理（過剰は脳症悪化）。塩分制限。分岐鎖アミノ酸の摂取" },
+      { category: "観察", detail: "腹囲・体重の毎日測定。黄疸の程度・意識レベル・羽ばたき振戦の確認" },
+      { category: "感染予防", detail: "免疫力低下あり。感染が重症化しやすい。発熱時は速やかに報告" },
+      { category: "出血", detail: "出血傾向あり。打撲・転倒に注意。歯磨きは柔らかいブラシで" },
+      { category: "薬", detail: "肝臓で代謝される薬は効きすぎに注意。新しい薬（市販薬含む）は医師に確認" }
+    ],
+    emergency: ["吐血（食道静脈瘤破裂）→横向きに寝かせ救急要請", "急な意識障害・異常行動（肝性脳症）→医療機関に連絡", "高熱＋腹痛（特発性細菌性腹膜炎）→救急要請"]
+  },
+  {
+    id: "constipation",
+    name: "慢性便秘症",
+    category: "消化器",
+    overview: "排便回数の減少や排便困難が持続する状態。高齢者に極めて多い。薬剤性・運動不足・水分不足が主因。イレウスの原因にもなる。",
+    medications: [
+      { name: "酸化マグネシウム（マグミット）", purpose: "浸透圧性下剤。腸内に水分を引き込み便を軟化", sideEffects: "高マグネシウム血症（腎機能低下者）", notes: "腎機能低下者は血中Mg値のモニタリング必要" },
+      { name: "ルビプロストン（アミティーザ）", purpose: "腸液分泌を促進し排便を改善", sideEffects: "嘔気、下痢", notes: "食後に服用。嘔気が出やすいので少量から" },
+      { name: "センノシド（プルゼニド）", purpose: "大腸刺激性下剤。腸の蠕動を促進", sideEffects: "腹痛、下痢、耐性（長期で効きにくくなる）", notes: "頓用が原則。長期連用は避ける" }
+    ],
+    carePoints: [
+      { category: "食事", detail: "食物繊維の摂取（野菜・果物・海藻）。十分な水分摂取（1日1.5L目標）" },
+      { category: "運動", detail: "腹部マッサージ（時計回り）。座位・立位の時間確保。歩行の促進" },
+      { category: "排泄習慣", detail: "毎日同じ時間のトイレ誘導。朝食後が排便しやすい。前傾姿勢の指導" },
+      { category: "観察", detail: "排便回数・量・性状の記録（ブリストルスケール活用）。腹部膨満感の確認" },
+      { category: "薬", detail: "便秘を起こす薬（オピオイド・抗コリン薬・Ca拮抗薬等）の確認" }
+    ],
+    emergency: ["数日間排便なし＋嘔吐・強い腹痛→イレウスの可能性、医療機関に連絡", "大量の下血→消化管出血、救急要請", "高度な腹部膨満＋発熱→医療機関に連絡"]
+  },
+  // ===== 泌尿器 =====
+  {
+    id: "uti",
+    name: "尿路感染症",
+    category: "泌尿器",
+    overview: "細菌が尿路に感染し炎症を起こす。膀胱炎・腎盂腎炎を含む。高齢者では症状が非典型的なことが多く、発熱だけの場合もある。",
+    medications: [
+      { name: "レボフロキサシン（クラビット）", purpose: "ニューキノロン系抗菌薬。尿路感染の治療", sideEffects: "腱断裂、QT延長、光線過敏症", notes: "高齢者ではアキレス腱断裂リスクに注意。日光を避ける" },
+      { name: "セファレキシン（ケフレックス）", purpose: "セフェム系抗菌薬。膀胱炎に使用", sideEffects: "下痢、発疹、アレルギー", notes: "ペニシリンアレルギーに注意。処方日数を守る" },
+    ],
+    carePoints: [
+      { category: "水分", detail: "十分な水分摂取で尿量を確保。細菌の排出を促す" },
+      { category: "清潔", detail: "陰部の清潔保持。おむつ交換の頻回化。前から後ろへ拭く" },
+      { category: "カテーテル", detail: "留置カテーテルは感染源。不要なら早期抜去。挿入部の清潔管理" },
+      { category: "観察", detail: "尿の混濁・悪臭・血尿の確認。排尿時痛・頻尿・残尿感の訴え" },
+      { category: "高齢者の特徴", detail: "典型的症状が出にくい。原因不明の発熱・せん妄・食欲低下で疑う" }
+    ],
+    emergency: ["高熱（38.5℃以上）＋腰背部痛→腎盂腎炎、医療機関に連絡", "敗血症の兆候（高熱・低血圧・頻脈・意識変容）→救急要請", "尿閉（尿が全く出ない）→医療機関に連絡"]
+  },
+  {
+    id: "bph",
+    name: "前立腺肥大症",
+    category: "泌尿器",
+    overview: "加齢に伴い前立腺が肥大し、尿道を圧迫して排尿障害を引き起こす。頻尿・残尿感・尿勢低下が主症状。男性高齢者に非常に多い。",
+    medications: [
+      { name: "タムスロシン（ハルナール）", purpose: "α1遮断薬。前立腺・尿道の平滑筋を弛緩", sideEffects: "起立性低血圧、めまい、射精障害", notes: "起立性低血圧に注意。食後に服用" },
+      { name: "デュタステリド（アボルブ）", purpose: "5α還元酵素阻害薬。前立腺を縮小", sideEffects: "性欲減退、勃起障害、乳房の腫れ", notes: "効果発現に3-6ヶ月かかる。PSA値が半減する" },
+    ],
+    carePoints: [
+      { category: "排尿管理", detail: "排尿回数・量の記録。残尿測定。夜間頻尿の把握" },
+      { category: "生活指導", detail: "長時間の座位を避ける。アルコール・カフェインの制限" },
+      { category: "薬", detail: "抗コリン薬（風邪薬に含まれる成分）で尿閉の危険。市販薬に注意" },
+      { category: "転倒予防", detail: "夜間頻尿による転倒リスク。ポータブルトイレの検討。足元灯の設置" },
+      { category: "観察", detail: "尿線の細さ・排尿開始までの時間・残尿感の変化" }
+    ],
+    emergency: ["完全な尿閉（尿が全く出ない＋下腹部の膨満・痛み）→医療機関に連絡", "血尿→医療機関に連絡", "発熱＋排尿痛→前立腺炎の可能性、医療機関に連絡"]
+  },
+  // ===== 精神科 =====
+  {
+    id: "depression",
+    name: "うつ病",
+    category: "精神科",
+    overview: "持続的な気分の落ち込み・興味の喪失・意欲低下を特徴とする精神疾患。高齢者では身体症状（不眠・食欲低下・疲労）が前面に出ることが多い。",
+    medications: [
+      { name: "セルトラリン（ジェイゾロフト）", purpose: "SSRI。セロトニンを増加させ気分を改善", sideEffects: "嘔気、下痢、不眠、性機能障害", notes: "効果発現に2-4週間。急な中止は離脱症状" },
+      { name: "ミルタザピン（リフレックス）", purpose: "NaSSA。食欲改善・睡眠改善効果もある", sideEffects: "眠気、体重増加、口渇", notes: "痩せ・不眠のある高齢者に適する。就寝前に服用" },
+      { name: "スルピリド（ドグマチール）", purpose: "少量でうつ・食欲低下を改善", sideEffects: "錐体外路症状、高プロラクチン血症", notes: "高齢者では錐体外路症状に注意。少量で使用" }
+    ],
+    carePoints: [
+      { category: "関わり方", detail: "「頑張って」は禁句。傾聴と受容的な態度。無理に励まさない" },
+      { category: "活動", detail: "小さなできることから段階的に。成功体験を積み重ねる" },
+      { category: "睡眠", detail: "規則正しい生活リズム。日光を浴びる時間の確保" },
+      { category: "食事", detail: "食欲低下時は好きなものを少量ずつ。栄養補助食品の活用" },
+      { category: "観察", detail: "表情・言動・睡眠・食事量の変化。希死念慮の有無を慎重に確認" }
+    ],
+    emergency: ["自殺をほのめかす言動→1人にしない。すぐに医療機関・相談窓口に連絡", "服薬拒否が続き状態が急速に悪化→医療機関に連絡", "興奮・錯乱状態→安全を確保し医療機関に連絡"]
+  },
+  {
+    id: "insomnia",
+    name: "不眠症",
+    category: "精神科",
+    overview: "入眠困難・中途覚醒・早朝覚醒により十分な睡眠が得られない状態。高齢者では生理的な睡眠の変化もあり、薬物への依存に注意が必要。",
+    medications: [
+      { name: "スボレキサント（ベルソムラ）", purpose: "オレキシン受容体拮抗薬。自然な眠気を促す", sideEffects: "日中の眠気、悪夢、頭痛", notes: "依存性が低い。就寝直前に服用。食直後は避ける" },
+      { name: "ラメルテオン（ロゼレム）", purpose: "メラトニン受容体作動薬。体内時計を整える", sideEffects: "眠気、めまい", notes: "依存性なし。効果発現に1-2週間。就寝前に服用" },
+      { name: "ゾルピデム（マイスリー）", purpose: "非ベンゾジアゼピン系睡眠薬。入眠を助ける", sideEffects: "健忘、ふらつき、転倒、依存", notes: "高齢者は転倒リスク増大。短期間使用が原則" }
+    ],
+    carePoints: [
+      { category: "睡眠衛生", detail: "規則正しい就寝・起床時間。日中の適度な活動と日光浴" },
+      { category: "環境", detail: "寝室の温度・湿度・明るさの調整。騒音対策" },
+      { category: "転倒予防", detail: "睡眠薬服用後の転倒リスク。夜間のトイレ動線を安全に" },
+      { category: "観察", detail: "入眠時間・中途覚醒回数・日中の眠気の記録" },
+      { category: "注意", detail: "カフェイン・アルコールの制限。長時間の昼寝を避ける" }
+    ],
+    emergency: ["睡眠薬の過量服用→意識確認し救急要請", "転倒・骨折→救急要請", "せん妄（夜間の興奮・幻覚・錯乱）→安全確保し医療機関に連絡"]
+  },
+  {
+    id: "delirium",
+    name: "せん妄",
+    category: "精神科",
+    overview: "急性に発症する注意力・意識の障害。幻覚・興奮・見当識障害を伴う。入院・手術・感染・脱水・薬剤が誘因。認知症との鑑別が重要。",
+    medications: [
+      { name: "クエチアピン（セロクエル）", purpose: "非定型抗精神病薬。興奮・幻覚を鎮静", sideEffects: "過鎮静、起立性低血圧、血糖上昇", notes: "少量から開始。糖尿病には禁忌。改善後は速やかに減量" },
+      { name: "リスペリドン（リスパダール）", purpose: "非定型抗精神病薬。少量で興奮を抑制", sideEffects: "錐体外路症状、過鎮静", notes: "液剤あり。嚥下困難な方にも使用可。レビー小体型認知症には慎重" },
+    ],
+    carePoints: [
+      { category: "環境調整", detail: "見当識を助ける（時計・カレンダー・家族の写真）。照明は夜も完全暗黒にしない" },
+      { category: "安全", detail: "転落・転倒防止。ベッド柵の適切な使用。点滴・チューブの自己抜去防止" },
+      { category: "コミュニケーション", detail: "穏やかに声をかける。否定せず安心感を与える。見慣れた人が対応" },
+      { category: "原因検索", detail: "脱水・感染・便秘・疼痛・薬剤変更がないか確認。原因の除去が最重要" },
+      { category: "観察", detail: "発症時刻・症状の変動・誘因の記録。日内変動（夕方～夜間に悪化）の把握" }
+    ],
+    emergency: ["激しい興奮で自傷・他害の危険→安全確保し医療機関に連絡", "急な意識レベル低下→原因疾患の悪化の可能性、救急要請", "原因不明の高熱を伴うせん妄→感染症の可能性、医療機関に連絡"]
+  },
+  // ===== 眼科 =====
+  {
+    id: "glaucoma",
+    name: "緑内障",
+    category: "眼科",
+    overview: "眼圧の上昇等により視神経が障害され、視野が欠ける疾患。失明原因の第1位。自覚症状に乏しく、点眼治療の継続が極めて重要。",
+    medications: [
+      { name: "ラタノプロスト（キサラタン）", purpose: "プロスタグランジン関連薬。房水の排出を促進し眼圧を下げる", sideEffects: "眼の充血、虹彩色素沈着、まつ毛の伸長", notes: "1日1回就寝前に点眼。冷所保存" },
+      { name: "チモロール（チモプトール）", purpose: "β遮断薬点眼。房水産生を抑制", sideEffects: "徐脈、気管支収縮、眼の刺激感", notes: "喘息・COPD・徐脈のある方は禁忌" },
+    ],
+    carePoints: [
+      { category: "点眼管理", detail: "毎日欠かさず点眼。自分でできない方は介助。点眼後は目を閉じ1分間涙嚢部を圧迫" },
+      { category: "安全", detail: "視野欠損による転倒・衝突に注意。足元・周囲の障害物除去" },
+      { category: "観察", detail: "見え方の変化の確認。急な眼痛・頭痛・嘔気は急性緑内障の可能性" },
+      { category: "薬", detail: "抗コリン薬（風邪薬・胃腸薬に含まれる）は眼圧を上げる可能性。市販薬に注意" },
+      { category: "通院", detail: "定期的な眼圧検査と視野検査が必要。通院の支援" }
+    ],
+    emergency: ["急な激しい眼痛＋頭痛・嘔気＋視力低下→急性閉塞隅角緑内障、速やかに眼科受診", "突然の視力低下→網膜中心動脈閉塞症等の可能性、救急受診", "急な視野欠損の拡大→医療機関に連絡"]
+  },
+  {
+    id: "cataract",
+    name: "白内障",
+    category: "眼科",
+    overview: "水晶体が白く濁り視力が低下する。加齢が最大の原因で、80歳以上のほぼ全員に認められる。まぶしさ・かすみが主症状。手術で改善可能。",
+    medications: [
+      { name: "ピレノキシン（カリーユニ）", purpose: "白内障進行を遅らせる点眼薬", sideEffects: "眼の刺激感（まれ）", notes: "進行を完全に止めることはできない。手術が根治的治療" },
+    ],
+    carePoints: [
+      { category: "安全", detail: "視力低下による転倒・誤認に注意。照明を明るくする" },
+      { category: "まぶしさ", detail: "強い光がまぶしい。サングラスや帽子の使用" },
+      { category: "生活支援", detail: "文字が見えにくくなる。服薬管理・食事の確認の支援" },
+      { category: "術後ケア", detail: "手術後は感染予防の点眼が重要。目をこすらない・重いものを持たない" },
+      { category: "観察", detail: "見え方の変化。物にぶつかる頻度。読書・テレビが困難になっていないか" }
+    ],
+    emergency: ["術後の急な眼痛・視力低下・充血→眼内炎の可能性、速やかに眼科受診", "急な視力低下（白内障以外の原因の可能性）→医療機関に連絡", "転倒による頭部外傷→医療機関に連絡"]
+  },
+  // ===== 感染症 =====
+  {
+    id: "mrsa",
+    name: "MRSA感染症",
+    category: "感染症",
+    overview: "メチシリン耐性黄色ブドウ球菌による感染症。通常の抗菌薬が効きにくい。高齢者施設での集団感染予防が重要。",
+    medications: [
+      { name: "バンコマイシン", purpose: "MRSA治療の第一選択。点滴静注", sideEffects: "腎障害、レッドマン症候群（急速投与時）", notes: "血中濃度モニタリング（TDM）が必要。腎機能に注意" },
+      { name: "ムピロシン軟膏（バクトロバン）", purpose: "鼻腔内MRSA除菌用", sideEffects: "局所の刺激感", notes: "鼻腔内に1日2-3回塗布。5日間" },
+    ],
+    carePoints: [
+      { category: "感染対策", detail: "標準予防策＋接触予防策。手袋・エプロンの着用。手指衛生の徹底" },
+      { category: "環境整備", detail: "ベッド周囲・高頻度接触面のアルコール清拭。リネンの適切な管理" },
+      { category: "他利用者", detail: "可能な範囲での個室管理またはコホーティング。共用物品を避ける" },
+      { category: "スタッフ教育", detail: "正しいPPE着脱手順。差別的対応をしない。過剰隔離を避ける" },
+      { category: "観察", detail: "創部の発赤・排膿の変化。発熱の有無。創傷治癒の経過" }
+    ],
+    emergency: ["MRSA菌血症の兆候（高熱・悪寒・低血圧）→救急要請", "壊死性筋膜炎の疑い（急速に広がる発赤・腫脹・激痛）→救急要請", "施設内での複数発生→感染対策チームに報告"]
+  },
+  {
+    id: "influenza",
+    name: "インフルエンザ",
+    category: "感染症",
+    overview: "インフルエンザウイルスによる急性呼吸器感染症。高齢者は重症化しやすく、肺炎を合併するリスクが高い。施設内のアウトブレイクに注意。",
+    medications: [
+      { name: "オセルタミビル（タミフル）", purpose: "ノイラミニダーゼ阻害薬。ウイルスの増殖を抑制", sideEffects: "嘔気、嘔吐、下痢", notes: "発症48時間以内に開始。5日間投与。腎機能で減量" },
+      { name: "バロキサビル（ゾフルーザ）", purpose: "キャップ依存性エンドヌクレアーゼ阻害薬。1回投与で完結", sideEffects: "下痢（まれ）", notes: "1回の服用で治療完結。耐性ウイルスの問題あり" },
+    ],
+    carePoints: [
+      { category: "感染対策", detail: "飛沫予防策。サージカルマスク・手指衛生。罹患者の個室管理" },
+      { category: "水分・栄養", detail: "脱水予防のため十分な水分摂取。食欲低下時は少量頻回食" },
+      { category: "観察", detail: "発熱の経過・呼吸状態・SpO2の測定。解熱後の再発熱に注意" },
+      { category: "予防", detail: "毎年のワクチン接種が最重要。流行期の面会制限の検討" },
+      { category: "合併症", detail: "肺炎・脱水・心不全悪化のリスク。基礎疾患の管理も同時に" }
+    ],
+    emergency: ["呼吸困難・SpO2低下→肺炎合併の疑い、医療機関に連絡", "意識障害・けいれん→脳症の可能性、救急要請", "施設内での複数発症→保健所に報告。集団感染対策の実施"]
+  },
+  // ===== 運動器 追加 =====
+  {
+    id: "hip_fracture",
+    name: "大腿骨骨折（術後）",
+    category: "運動器",
+    overview: "高齢者の転倒で最も多い重大な骨折。手術後のリハビリと再転倒予防が極めて重要。寝たきりの原因となりやすい。",
+    medications: [
+      { name: "鎮痛薬（アセトアミノフェン等）", purpose: "術後の疼痛管理", sideEffects: "肝障害（過量時）", notes: "痛みの評価を定期的に行い適切に使用。NSAIDsは腎機能に注意" },
+      { name: "抗凝固薬（エノキサパリン等）", purpose: "術後の深部静脈血栓症（DVT）予防", sideEffects: "出血傾向、注射部位の内出血", notes: "術後一定期間投与。出血徴候の観察" },
+      { name: "骨粗鬆症治療薬", purpose: "再骨折の予防", sideEffects: "（薬剤による）", notes: "骨粗鬆症の治療を同時に開始することが重要" }
+    ],
+    carePoints: [
+      { category: "リハビリ", detail: "術後早期から離床・歩行訓練。痛みに合わせた段階的な荷重" },
+      { category: "転倒予防", detail: "再転倒の予防が最重要。環境整備・歩行補助具の適切な使用" },
+      { category: "DVT予防", detail: "弾性ストッキングの着用。足関節の自動運動。下肢の腫脹・疼痛の観察" },
+      { category: "疼痛管理", detail: "適切な鎮痛でリハビリへの参加を促す。痛みの程度を定期評価" },
+      { category: "生活再建", detail: "ADLの再獲得を目標に。できることは自分で行ってもらう" }
+    ],
+    emergency: ["術後の急な呼吸困難・胸痛→肺塞栓症の疑い、救急要請", "創部の発赤・腫脹・排膿・発熱→術後感染の疑い、医療機関に連絡", "再転倒→動かさず医療機関に連絡"]
+  },
+  {
+    id: "spinal_stenosis",
+    name: "腰部脊柱管狭窄症",
+    category: "運動器",
+    overview: "脊柱管が狭くなり神経が圧迫される。間欠性跛行（しばらく歩くと足が痛み休むと回復）が特徴的。高齢者の腰痛・歩行障害の主因の一つ。",
+    medications: [
+      { name: "プレガバリン（リリカ）", purpose: "神経障害性疼痛の緩和", sideEffects: "めまい、眠気、体重増加、浮腫", notes: "高齢者は少量から。転倒リスク増大に注意" },
+      { name: "リマプロストアルファデクス（オパルモン）", purpose: "血流改善。間欠性跛行の改善", sideEffects: "下痢、嘔気", notes: "食後に服用。効果発現に数週間" },
+    ],
+    carePoints: [
+      { category: "歩行", detail: "杖・シルバーカーの活用。こまめに休憩。前かがみの姿勢で症状が楽になる" },
+      { category: "姿勢", detail: "腰を反らす動作で悪化。前屈姿勢が楽。自転車は比較的楽に乗れる" },
+      { category: "転倒予防", detail: "足のしびれによる転倒リスク。段差・滑りやすい場所に注意" },
+      { category: "運動", detail: "腰痛体操・ストレッチ。体幹筋力の維持。水中歩行が効果的" },
+      { category: "観察", detail: "歩行距離の変化。膀胱直腸障害（尿失禁・排便障害）の出現は手術適応のサイン" }
+    ],
+    emergency: ["急な両下肢の麻痺・膀胱直腸障害→馬尾症候群の可能性、速やかに医療機関へ", "転倒による骨折の疑い→動かさず医療機関に連絡", "激しい腰痛で全く動けない→医療機関に連絡"]
+  },
+  // ===== 内科 追加 =====
+  {
+    id: "anemia",
+    name: "貧血",
+    category: "内科",
+    overview: "ヘモグロビンが低下した状態。高齢者では鉄欠乏性貧血・慢性疾患に伴う貧血が多い。倦怠感・息切れ・めまいが主症状。消化管出血が隠れていることもある。",
+    medications: [
+      { name: "クエン酸第一鉄（フェロミア）", purpose: "鉄欠乏性貧血の治療。鉄分を補充", sideEffects: "嘔気、便秘、黒色便", notes: "食後に服用で胃腸障害軽減。お茶との同時服用は避ける" },
+      { name: "エリスロポエチン製剤", purpose: "腎性貧血の治療。赤血球産生を促進", sideEffects: "血圧上昇、血栓症", notes: "ヘモグロビン値の目標を設定して投与量調整" },
+    ],
+    carePoints: [
+      { category: "食事", detail: "鉄分の多い食品（レバー・赤身肉・小松菜・ひじき）。ビタミンCで吸収促進" },
+      { category: "活動", detail: "めまい・ふらつきに注意。急な立ち上がりを避ける" },
+      { category: "転倒予防", detail: "めまい・息切れによる転倒リスク。無理な活動を避ける" },
+      { category: "観察", detail: "顔色・眼瞼結膜の色・爪の色の確認。便の色（黒色便は消化管出血の可能性）" },
+      { category: "検査", detail: "定期的な血液検査。原因疾患（消化管出血・腎疾患等）の精査" }
+    ],
+    emergency: ["大量の吐血・下血→消化管出血、救急要請", "強いめまい・失神→救急要請", "急激なHb低下＋頻脈・冷汗→出血性ショックの可能性、救急要請"]
+  },
+  // ===== 皮膚 追加 =====
+  {
+    id: "scabies",
+    name: "疥癬（かいせん）",
+    category: "皮膚",
+    overview: "ヒゼンダニの寄生による皮膚感染症。激しいかゆみが特徴。高齢者施設で集団感染（アウトブレイク）を起こしやすい。通常疥癬と角化型疥癬がある。",
+    medications: [
+      { name: "イベルメクチン（ストロメクトール）", purpose: "内服駆虫薬。ヒゼンダニを駆除", sideEffects: "かゆみの一時的増悪、肝機能障害", notes: "空腹時に服用。1-2週間後に再投与することが多い" },
+      { name: "フェノトリン（スミスリン）ローション", purpose: "外用殺虫剤。ダニを駆除", sideEffects: "皮膚刺激、発赤", notes: "首から下の全身に塗布し12時間後に洗い流す" },
+    ],
+    carePoints: [
+      { category: "感染対策", detail: "接触予防策の徹底。手袋・長袖エプロンの着用。角化型は空気感染も考慮" },
+      { category: "リネン管理", detail: "シーツ・衣類は50℃以上で10分間熱処理後に洗濯。乾燥機も有効" },
+      { category: "スキンケア", detail: "全身の皮膚観察。かゆみによる掻破痕の二次感染予防" },
+      { category: "施設対応", detail: "疑わしい場合は早期に皮膚科受診。接触者の一斉検査・予防投与の検討" },
+      { category: "観察", detail: "手指の間・腕の内側・腹部・陰部の皮疹。夜間に増強するかゆみ" }
+    ],
+    emergency: ["角化型疥癬の発見→強い感染力あり。直ちに個室隔離し感染対策チームに報告", "広範囲の二次感染（蜂窩織炎）＋発熱→医療機関に連絡", "施設内での複数発症→保健所に相談。集団対応が必要"]
+  }
+];
+
+// ========== カテゴリ一覧 ==========
+const CATEGORIES = [...new Set(DISEASES.map(d => d.category))];
+
+// ========== 状態管理 ==========
+let currentCategory = "すべて";
+let residents = JSON.parse(localStorage.getItem("careGuideResidents") || "[]");
+
+// ========== 初期化 ==========
+document.addEventListener("DOMContentLoaded", () => {
+  renderCategoryFilter();
+  renderDiseaseList();
+  renderResidentList();
+  initRecordTab();
+
+  document.getElementById("search-input").addEventListener("input", () => {
+    const query = document.getElementById("search-input").value;
+    if (query.length > 0 && currentCategory !== "すべて") {
+      currentCategory = "すべて";
+      document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+      document.querySelector(".cat-btn").classList.add("active");
+    }
+    renderDiseaseList();
+  });
+});
+
+// ========== タブ切り替え ==========
+function switchTab(tabId, btn) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tabId).classList.add("active");
+  btn.classList.add("active");
+  if (tabId === "record") initRecordTab();
+}
+
+// ========== カテゴリフィルター ==========
+function renderCategoryFilter() {
+  const container = document.getElementById("category-filter");
+  let html = `<button class="cat-btn active" onclick="filterCategory('すべて', this)">すべて</button>`;
+  CATEGORIES.forEach(cat => {
+    html += `<button class="cat-btn" onclick="filterCategory('${cat}', this)">${cat}</button>`;
+  });
+  container.innerHTML = html;
+}
+
+function filterCategory(cat, btn) {
+  currentCategory = cat;
+  document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderDiseaseList();
+}
+
+// ========== 疾患一覧 ==========
+function renderDiseaseList() {
+  const query = document.getElementById("search-input").value.toLowerCase();
+  const container = document.getElementById("disease-list");
+
+  const filtered = DISEASES.filter(d => {
+    const matchCat = currentCategory === "すべて" || d.category === currentCategory;
+    if (!query) return matchCat;
+    // 病名・概要・カテゴリ・薬名・ケアポイント・緊急対応すべてを検索対象にする
+    const haystack = [
+      d.name, d.overview, d.category,
+      ...d.medications.map(m => m.name + " " + m.purpose + " " + m.sideEffects + " " + m.notes),
+      ...d.carePoints.map(cp => cp.category + " " + cp.detail),
+      ...d.emergency
+    ].join(" ").toLowerCase();
+    return matchCat && haystack.includes(query);
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-data">該当する疾患が見つかりません</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(d => `
+    <div class="disease-card" onclick="showDiseaseDetail('${d.id}')">
+      <span class="category-tag">${d.category}</span>
+      <h3>${d.name}</h3>
+      <p class="overview">${d.overview}</p>
+    </div>
+  `).join("");
+}
+
+// ========== 疾患詳細モーダル ==========
+function showDiseaseDetail(diseaseId) {
+  const d = DISEASES.find(x => x.id === diseaseId);
+  if (!d) return;
+
+  document.getElementById("modal-title").textContent = d.name;
+
+  let html = "";
+
+  // 概要
+  html += `<div class="detail-section">
+    <div class="section-title overview-title">&#x1F4CB; 概要</div>
+    <p style="font-size:14px;padding:0 4px;">${d.overview}</p>
+  </div>`;
+
+  // 薬
+  html += `<div class="detail-section">
+    <div class="section-title med-title">&#x1F48A; 関連する薬</div>`;
+  d.medications.forEach(m => {
+    html += `<div class="med-card">
+      <div class="med-name">${m.name}</div>
+      <div class="med-row"><span class="med-label">用途：</span><span class="med-value">${m.purpose}</span></div>
+      <div class="med-row"><span class="med-label">副作用：</span><span class="med-value side-effect">${m.sideEffects}</span></div>
+      <div class="med-row"><span class="med-label">注意：</span><span class="med-value">${m.notes}</span></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ケアポイント
+  html += `<div class="detail-section">
+    <div class="section-title care-title">&#x1F9D1;&#x200D;&#x2695;&#xFE0F; ケアの注意点</div>`;
+  d.carePoints.forEach(cp => {
+    html += `<div class="care-item">
+      <div class="care-cat">${cp.category}</div>
+      <div>${cp.detail}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 緊急
+  html += `<div class="detail-section">
+    <div class="section-title emergency-title">&#x1F6A8; 緊急時の対応</div>
+    <div class="emergency-box"><ul>`;
+  d.emergency.forEach(e => {
+    html += `<li>${e}</li>`;
+  });
+  html += `</ul></div></div>`;
+
+  document.getElementById("modal-body").innerHTML = html;
+  document.getElementById("disease-modal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDiseaseModal() {
+  document.getElementById("disease-modal").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+function closeModal(event) {
+  if (event.target === event.currentTarget) closeDiseaseModal();
+}
+
+// ========== 利用者管理 ==========
+function saveResidents() {
+  localStorage.setItem("careGuideResidents", JSON.stringify(residents));
+}
+
+function renderResidentList() {
+  const container = document.getElementById("resident-list");
+
+  if (residents.length === 0) {
+    container.innerHTML = `<div class="no-data">利用者が登録されていません</div>`;
+    return;
+  }
+
+  container.innerHTML = residents.map((r, i) => {
+    const diseaseNames = r.diseaseIds.map(id => {
+      const d = DISEASES.find(x => x.id === id);
+      return d ? d.name : "";
+    }).filter(Boolean);
+
+    return `<div class="resident-card">
+      <div class="resident-header" onclick="toggleResidentDetail(${i})">
+        <div>
+          <div class="resident-name">${escapeHtml(r.name)}</div>
+          <div class="resident-meta">${r.age}歳 ・ ${r.gender} ・ 疾患${diseaseNames.length}件</div>
+        </div>
+        <div class="resident-actions">
+          <button onclick="event.stopPropagation(); editResident(${i})">編集</button>
+          <button class="del-btn" onclick="event.stopPropagation(); deleteResident(${i})">削除</button>
+        </div>
+      </div>
+      <div class="resident-diseases" id="resident-detail-${i}">
+        ${diseaseNames.length > 0
+          ? diseaseNames.map(name => `<span class="disease-tag" onclick="event.stopPropagation(); showDiseaseDetail('${DISEASES.find(d=>d.name===name)?.id}')">${name}</span>`).join("")
+          : `<span style="color:var(--gray-500);font-size:13px;">疾患が登録されていません</span>`
+        }
+        <div style="margin-top:12px;">
+          <button style="width:100%;padding:10px;border:none;border-radius:8px;background:var(--primary);color:#fff;font-size:14px;font-weight:600;cursor:pointer;" onclick="event.stopPropagation(); showResidentSummary(${i})">まとめて確認</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleResidentDetail(index) {
+  const el = document.getElementById("resident-detail-" + index);
+  el.classList.toggle("open");
+}
+
+function openResidentForm(index) {
+  const form = document.getElementById("form-modal");
+  const nameInput = document.getElementById("resident-name-input");
+  const ageInput = document.getElementById("resident-age-input");
+  const genderInput = document.getElementById("resident-gender-input");
+  const editingId = document.getElementById("editing-resident-id");
+
+  // チェックボックス生成
+  const checkboxContainer = document.getElementById("disease-checkboxes");
+  checkboxContainer.innerHTML = DISEASES.map(d => `
+    <label class="disease-check-item">
+      <input type="checkbox" value="${d.id}" id="dc-${d.id}">
+      <span>${d.name}（${d.category}）</span>
+    </label>
+  `).join("");
+
+  if (index !== undefined && residents[index]) {
+    // 編集モード
+    const r = residents[index];
+    document.getElementById("form-title").textContent = "利用者を編集";
+    nameInput.value = r.name;
+    genderInput.value = r.gender;
+    editingId.value = index;
+    r.diseaseIds.forEach(id => {
+      const cb = document.getElementById("dc-" + id);
+      if (cb) cb.checked = true;
+    });
+    // ピッカーを初期化（編集対象の年齢）
+    setTimeout(() => initAgePicker(r.age), 50);
+  } else {
+    // 新規モード
+    document.getElementById("form-title").textContent = "利用者を追加";
+    nameInput.value = "";
+    genderInput.value = "男性";
+    editingId.value = "";
+    // ピッカーを初期化（デフォルト85歳）
+    setTimeout(() => initAgePicker(85), 50);
+  }
+
+  form.classList.add("active");
+}
+
+function editResident(index) {
+  openResidentForm(index);
+}
+
+function saveResident() {
+  const name = document.getElementById("resident-name-input").value.trim();
+  const age = document.getElementById("resident-age-input").value;
+  const gender = document.getElementById("resident-gender-input").value;
+  const editingId = document.getElementById("editing-resident-id").value;
+
+  if (!name) {
+    alert("お名前を入力してください");
+    return;
+  }
+  if (!age) {
+    alert("年齢を入力してください");
+    return;
+  }
+
+  const selectedDiseases = [];
+  DISEASES.forEach(d => {
+    const cb = document.getElementById("dc-" + d.id);
+    if (cb && cb.checked) selectedDiseases.push(d.id);
+  });
+
+  const residentData = {
+    name,
+    age: parseInt(age),
+    gender,
+    diseaseIds: selectedDiseases
+  };
+
+  if (editingId !== "") {
+    residents[parseInt(editingId)] = residentData;
+  } else {
+    residents.push(residentData);
+  }
+
+  saveResidents();
+  renderResidentList();
+  closeFormModalDirect();
+}
+
+function deleteResident(index) {
+  if (confirm(residents[index].name + "さんを削除しますか？")) {
+    residents.splice(index, 1);
+    saveResidents();
+    renderResidentList();
+  }
+}
+
+function closeFormModal(event) {
+  if (event.target === event.currentTarget) closeFormModalDirect();
+}
+
+function closeFormModalDirect() {
+  document.getElementById("form-modal").classList.remove("active");
+}
+
+// ========== 利用者サマリー ==========
+function showResidentSummary(index) {
+  const r = residents[index];
+  if (!r) return;
+
+  document.getElementById("summary-title").textContent = r.name + "さんのケアガイド";
+
+  const diseases = r.diseaseIds.map(id => DISEASES.find(x => x.id === id)).filter(Boolean);
+
+  if (diseases.length === 0) {
+    document.getElementById("summary-body").innerHTML = `<div class="no-data">疾患が登録されていません</div>`;
+  } else {
+    let html = "";
+    diseases.forEach(d => {
+      html += `<div class="summary-disease-block">
+        <div class="summary-disease-name">${d.name}</div>`;
+
+      // 薬
+      html += `<div class="section-title med-title" style="font-size:14px;">&#x1F48A; 薬</div>`;
+      d.medications.forEach(m => {
+        html += `<div class="med-card">
+          <div class="med-name">${m.name}</div>
+          <div class="med-row"><span class="med-label">用途：</span><span class="med-value">${m.purpose}</span></div>
+          <div class="med-row"><span class="med-label">副作用：</span><span class="med-value side-effect">${m.sideEffects}</span></div>
+          <div class="med-row"><span class="med-label">注意：</span><span class="med-value">${m.notes}</span></div>
+        </div>`;
+      });
+
+      // ケア
+      html += `<div class="section-title care-title" style="font-size:14px;">&#x1F9D1;&#x200D;&#x2695;&#xFE0F; ケア注意点</div>`;
+      d.carePoints.forEach(cp => {
+        html += `<div class="care-item">
+          <div class="care-cat">${cp.category}</div>
+          <div>${cp.detail}</div>
+        </div>`;
+      });
+
+      // 緊急
+      html += `<div class="section-title emergency-title" style="font-size:14px;">&#x1F6A8; 緊急時</div>
+        <div class="emergency-box"><ul>`;
+      d.emergency.forEach(e => {
+        html += `<li>${e}</li>`;
+      });
+      html += `</ul></div></div>`;
+    });
+    document.getElementById("summary-body").innerHTML = html;
+  }
+
+  document.getElementById("summary-modal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSummaryModal(event) {
+  if (event.target === event.currentTarget) closeSummaryModalDirect();
+}
+
+function closeSummaryModalDirect() {
+  document.getElementById("summary-modal").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+// ========== 年齢スクロールピッカー ==========
+const AGE_MIN = 0;
+const AGE_MAX = 120;
+const ITEM_H = 44;
+const VISIBLE_COUNT = Math.floor(180 / ITEM_H); // ピッカー内に見える個数
+const CENTER_OFFSET = Math.floor(VISIBLE_COUNT / 2);
+
+let agePickerValue = 85;
+let agePickerY = 0;
+let ageIsDragging = false;
+let ageStartY = 0;
+let ageStartTranslate = 0;
+let ageLastTime = 0;
+let ageVelocity = 0;
+let ageLastClientY = 0;
+let ageAnimFrame = null;
+
+function initAgePicker(initialAge) {
+  agePickerValue = initialAge;
+  const list = document.getElementById("age-picker-list");
+
+  // アイテム生成
+  let html = "";
+  for (let i = AGE_MIN; i <= AGE_MAX; i++) {
+    html += `<div class="scroll-picker-item" data-age="${i}">${i}</div>`;
+  }
+  list.innerHTML = html;
+
+  // 初期位置
+  setAgePickerPosition(initialAge, false);
+  updateAgePickerStyles();
+
+  // イベント
+  const picker = document.getElementById("age-picker");
+
+  picker.addEventListener("pointerdown", onAgePointerDown);
+  picker.addEventListener("pointermove", onAgePointerMove);
+  picker.addEventListener("pointerup", onAgePointerUp);
+  picker.addEventListener("pointercancel", onAgePointerUp);
+  picker.addEventListener("wheel", onAgeWheel, { passive: false });
+
+  // アイテムクリック
+  list.addEventListener("click", (e) => {
+    const item = e.target.closest(".scroll-picker-item");
+    if (item && !ageIsDragging) {
+      const age = parseInt(item.dataset.age);
+      setAgePickerPosition(age, true);
+      updateAgePickerStyles();
+    }
+  });
+}
+
+function setAgePickerPosition(age, animate) {
+  age = Math.max(AGE_MIN, Math.min(AGE_MAX, age));
+  agePickerValue = age;
+  agePickerY = -(age - CENTER_OFFSET) * ITEM_H;
+  const list = document.getElementById("age-picker-list");
+  list.style.transition = animate ? "transform 0.25s ease-out" : "none";
+  list.style.transform = `translateY(${agePickerY}px)`;
+  document.getElementById("resident-age-input").value = age;
+}
+
+function updateAgePickerStyles() {
+  const items = document.querySelectorAll("#age-picker-list .scroll-picker-item");
+  items.forEach(item => {
+    const age = parseInt(item.dataset.age);
+    const diff = Math.abs(age - agePickerValue);
+    item.classList.remove("selected", "near");
+    if (diff === 0) item.classList.add("selected");
+    else if (diff <= 1) item.classList.add("near");
+  });
+}
+
+function onAgePointerDown(e) {
+  ageIsDragging = true;
+  ageStartY = e.clientY;
+  ageStartTranslate = agePickerY;
+  ageLastClientY = e.clientY;
+  ageLastTime = Date.now();
+  ageVelocity = 0;
+  if (ageAnimFrame) cancelAnimationFrame(ageAnimFrame);
+  const list = document.getElementById("age-picker-list");
+  list.style.transition = "none";
+  e.currentTarget.setPointerCapture(e.pointerId);
+}
+
+function onAgePointerMove(e) {
+  if (!ageIsDragging) return;
+  const dy = e.clientY - ageStartY;
+  agePickerY = ageStartTranslate + dy;
+
+  const now = Date.now();
+  const dt = now - ageLastTime;
+  if (dt > 0) {
+    ageVelocity = (e.clientY - ageLastClientY) / dt;
+  }
+  ageLastClientY = e.clientY;
+  ageLastTime = now;
+
+  const list = document.getElementById("age-picker-list");
+  list.style.transform = `translateY(${agePickerY}px)`;
+
+  // リアルタイムで中央の値を更新
+  const rawAge = CENTER_OFFSET - agePickerY / ITEM_H;
+  const nearAge = Math.round(Math.max(AGE_MIN, Math.min(AGE_MAX, rawAge)));
+  if (nearAge !== agePickerValue) {
+    agePickerValue = nearAge;
+    document.getElementById("resident-age-input").value = nearAge;
+    updateAgePickerStyles();
+  }
+}
+
+function onAgePointerUp(e) {
+  if (!ageIsDragging) return;
+  ageIsDragging = false;
+
+  // 慣性スクロール
+  if (Math.abs(ageVelocity) > 0.3) {
+    const inertiaDistance = ageVelocity * 150;
+    const targetY = agePickerY + inertiaDistance;
+    const rawAge = CENTER_OFFSET - targetY / ITEM_H;
+    const snappedAge = Math.round(Math.max(AGE_MIN, Math.min(AGE_MAX, rawAge)));
+    setAgePickerPosition(snappedAge, true);
+  } else {
+    // スナップ
+    const rawAge = CENTER_OFFSET - agePickerY / ITEM_H;
+    const snappedAge = Math.round(Math.max(AGE_MIN, Math.min(AGE_MAX, rawAge)));
+    setAgePickerPosition(snappedAge, true);
+  }
+  updateAgePickerStyles();
+}
+
+function onAgeWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 1 : -1;
+  const newAge = Math.max(AGE_MIN, Math.min(AGE_MAX, agePickerValue + delta));
+  setAgePickerPosition(newAge, true);
+  updateAgePickerStyles();
+}
+
+// ========== 記録管理 ==========
+let records = JSON.parse(localStorage.getItem("careGuideRecords") || "[]");
+let currentRecordDate = recordFormatDate(new Date());
+let currentRecordResidentIdx = -1;
+let currentRecordType = "排便";
+
+function recordFormatDate(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function recordFormatTimeNow() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+
+function initRecordTab() {
+  const sel = document.getElementById("record-resident-select");
+  const prevVal = sel.value;
+  sel.innerHTML = `<option value="">-- 利用者を選択 --</option>` +
+    residents.map((r, i) => `<option value="${i}">${escapeHtml(r.name)}</option>`).join("");
+  if (prevVal !== "" && residents[parseInt(prevVal)]) {
+    sel.value = prevVal;
+    currentRecordResidentIdx = parseInt(prevVal);
+  } else {
+    currentRecordResidentIdx = sel.value !== "" ? parseInt(sel.value) : -1;
+  }
+  renderRecordDateNav();
+  renderDailySummary();
+  renderRecordList();
+  renderVitalSummary();
+  renderVitalList();
+}
+
+function renderRecordDateNav() {
+  const label = document.getElementById("record-date-label");
+  if (!label) return;
+  const d = new Date(currentRecordDate + "T00:00:00");
+  const today = recordFormatDate(new Date());
+  const dateStr = d.toLocaleDateString("ja-JP", { month: "long", day: "numeric", weekday: "short" });
+  label.textContent = currentRecordDate === today ? "今日（" + dateStr + "）" : dateStr;
+}
+
+function changeRecordDate(delta) {
+  const d = new Date(currentRecordDate + "T00:00:00");
+  d.setDate(d.getDate() + delta);
+  currentRecordDate = recordFormatDate(d);
+  renderRecordDateNav();
+  renderDailySummary();
+  renderRecordList();
+  renderVitalSummary();
+  renderVitalList();
+}
+
+function onRecordResidentChange() {
+  const sel = document.getElementById("record-resident-select");
+  currentRecordResidentIdx = sel.value !== "" ? parseInt(sel.value) : -1;
+  renderDailySummary();
+  renderRecordList();
+  renderVitalSummary();
+  renderVitalList();
+}
+
+function getFilteredRecords() {
+  return records.filter(r => {
+    if (r.date !== currentRecordDate) return false;
+    if (currentRecordResidentIdx === -1) return true;
+    return r.residentIdx === currentRecordResidentIdx;
+  });
+}
+
+function renderDailySummary() {
+  const el = document.getElementById("record-daily-summary");
+  if (!el) return;
+  const filtered = getFilteredRecords();
+  const bowelCount = filtered.filter(r => r.type === "排便").length;
+  const urineCount = filtered.filter(r => r.type === "排尿").length;
+  const fluidTotal = filtered.filter(r => r.type === "水分").reduce((s, r) => s + (r.amount_ml || 0), 0);
+  el.innerHTML = `
+    <div><div class="summary-item-value" style="color:var(--warning)">${bowelCount}回</div><div class="summary-item-label">排便</div></div>
+    <div><div class="summary-item-value" style="color:var(--info)">${urineCount}回</div><div class="summary-item-label">排尿</div></div>
+    <div><div class="summary-item-value" style="color:var(--success)">${fluidTotal}ml</div><div class="summary-item-label">水分摂取</div></div>
+  `;
+}
+
+function renderRecordList() {
+  const container = document.getElementById("record-list");
+  if (!container) return;
+  const filtered = getFilteredRecords().slice().sort((a, b) => a.time.localeCompare(b.time));
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-data">記録がありません</div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(r => {
+    const globalIdx = records.indexOf(r);
+    let icon, detail;
+    if (r.type === "排便") {
+      icon = "💩";
+      detail = (r.amount || "") + " ・ " + (r.condition || "");
+    } else if (r.type === "排尿") {
+      icon = "💧";
+      detail = (r.amount || "") + " ・ " + (r.color || "");
+    } else {
+      icon = "🥤";
+      detail = (r.amount_ml || 0) + "ml ・ " + (r.drink_type || "");
+    }
+    const residentLabel = (currentRecordResidentIdx === -1 && r.residentIdx >= 0 && residents[r.residentIdx])
+      ? `<span style="font-size:11px;background:var(--primary-light);color:var(--primary);padding:1px 6px;border-radius:8px;margin-right:4px;">${escapeHtml(residents[r.residentIdx].name)}</span>` : "";
+    return `<div class="record-entry">
+      <div class="record-entry-icon">${icon}</div>
+      <div class="record-entry-info">
+        <div class="record-entry-time">${residentLabel}${r.time} ・ ${r.type}</div>
+        <div class="record-entry-detail">${detail}</div>
+        ${r.memo ? `<div class="record-entry-memo">${escapeHtml(r.memo)}</div>` : ""}
+      </div>
+      <button class="record-del-btn" onclick="deleteRecord(${globalIdx})">&times;</button>
+    </div>`;
+  }).join("");
+}
+
+function deleteRecord(idx) {
+  if (confirm("この記録を削除しますか？")) {
+    records.splice(idx, 1);
+    saveRecords();
+    renderDailySummary();
+    renderRecordList();
+  }
+}
+
+function saveRecords() {
+  localStorage.setItem("careGuideRecords", JSON.stringify(records));
+}
+
+function openRecordForm() {
+  const sel = document.getElementById("record-resident-select");
+  if (residents.length > 0 && sel.value === "") {
+    alert("利用者を選択してください");
+    return;
+  }
+  currentRecordType = "排便";
+  updateRecordTypeUI();
+  document.getElementById("record-time-input").value = recordFormatTimeNow();
+  document.getElementById("record-memo-input").value = "";
+  document.getElementById("fluid-amount-input").value = "";
+  document.getElementById("fluid-type-input").value = "水";
+  selectOption("bowel-amount", "中");
+  selectOption("bowel-condition", "普通");
+  selectOption("urine-amount", "中");
+  selectOption("urine-color", "黄");
+  document.getElementById("record-form-modal").classList.add("active");
+}
+
+function closeRecordForm() {
+  document.getElementById("record-form-modal").classList.remove("active");
+}
+
+function setRecordType(type) {
+  currentRecordType = type;
+  updateRecordTypeUI();
+}
+
+function updateRecordTypeUI() {
+  document.querySelectorAll(".record-type-btn").forEach(b => b.classList.remove("active-bowel", "active-urine", "active-fluid"));
+  const btnMap = { "排便": "btn-bowel", "排尿": "btn-urine", "水分": "btn-fluid" };
+  const clsMap = { "排便": "active-bowel", "排尿": "active-urine", "水分": "active-fluid" };
+  const btn = document.getElementById(btnMap[currentRecordType]);
+  if (btn) btn.classList.add(clsMap[currentRecordType]);
+  document.querySelectorAll(".record-section-fields").forEach(f => f.classList.remove("active"));
+  const sectionMap = { "排便": "bowel-fields", "排尿": "urine-fields", "水分": "fluid-fields" };
+  const sec = document.getElementById(sectionMap[currentRecordType]);
+  if (sec) sec.classList.add("active");
+}
+
+function selectOption(groupId, value) {
+  const group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll(".option-btn").forEach(b => {
+    b.classList.toggle("selected", b.dataset.value === value);
+  });
+}
+
+function getSelectedOption(groupId) {
+  const group = document.getElementById(groupId);
+  if (!group) return "";
+  const sel = group.querySelector(".option-btn.selected");
+  return sel ? sel.dataset.value : "";
+}
+
+function saveRecord() {
+  const timeVal = document.getElementById("record-time-input").value;
+  if (!timeVal) { alert("時刻を入力してください"); return; }
+  const sel = document.getElementById("record-resident-select");
+  const residentIdx = sel.value !== "" ? parseInt(sel.value) : -1;
+  const record = {
+    residentIdx,
+    type: currentRecordType,
+    date: currentRecordDate,
+    time: timeVal,
+    memo: document.getElementById("record-memo-input").value.trim()
+  };
+  if (currentRecordType === "排便") {
+    record.amount = getSelectedOption("bowel-amount");
+    record.condition = getSelectedOption("bowel-condition");
+  } else if (currentRecordType === "排尿") {
+    record.amount = getSelectedOption("urine-amount");
+    record.color = getSelectedOption("urine-color");
+  } else {
+    record.amount_ml = parseInt(document.getElementById("fluid-amount-input").value) || 0;
+    record.drink_type = document.getElementById("fluid-type-input").value || "水";
+  }
+  records.push(record);
+  saveRecords();
+  closeRecordForm();
+  renderDailySummary();
+  renderRecordList();
+}
+
+// ========== バイタル管理 ==========
+let vitals = JSON.parse(localStorage.getItem("careGuideVitals") || "[]");
+
+function saveVitals() {
+  localStorage.setItem("careGuideVitals", JSON.stringify(vitals));
+}
+
+function getFilteredVitals() {
+  return vitals.filter(v => {
+    if (v.date !== currentRecordDate) return false;
+    if (currentRecordResidentIdx === -1) return true;
+    return v.residentIdx === currentRecordResidentIdx;
+  });
+}
+
+function renderVitalSummary() {
+  const el = document.getElementById("vital-daily-summary");
+  if (!el) return;
+  const filtered = getFilteredVitals().slice().sort((a, b) => a.time.localeCompare(b.time));
+  if (filtered.length === 0) {
+    el.style.display = "none";
+    return;
+  }
+  el.style.display = "block";
+  const lastWithBp  = [...filtered].reverse().find(v => v.bp_sys && v.bp_dia);
+  const lastWithTemp  = [...filtered].reverse().find(v => v.temp != null);
+  const lastWithSpo2  = [...filtered].reverse().find(v => v.spo2 != null);
+  const lastWithPulse = [...filtered].reverse().find(v => v.pulse != null);
+  document.getElementById("vs-bp").innerHTML =
+    lastWithBp ? `${lastWithBp.bp_sys}/${lastWithBp.bp_dia}` : "--/--";
+  document.getElementById("vs-temp").innerHTML =
+    lastWithTemp ? `${lastWithTemp.temp}<span class="vital-item-unit">°C</span>` : `--<span class="vital-item-unit">°C</span>`;
+  document.getElementById("vs-spo2").innerHTML =
+    lastWithSpo2 ? `${lastWithSpo2.spo2}<span class="vital-item-unit">%</span>` : `--<span class="vital-item-unit">%</span>`;
+  document.getElementById("vs-pulse").innerHTML =
+    lastWithPulse ? `${lastWithPulse.pulse}<span class="vital-item-unit">bpm</span>` : `--<span class="vital-item-unit">bpm</span>`;
+}
+
+function renderVitalList() {
+  const container = document.getElementById("vital-list");
+  if (!container) return;
+  const filtered = getFilteredVitals().slice().sort((a, b) => a.time.localeCompare(b.time));
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="no-data" style="padding:16px 0 4px;">バイタル記録がありません</div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(v => {
+    const globalIdx = vitals.indexOf(v);
+    const residentLabel = (currentRecordResidentIdx === -1 && v.residentIdx >= 0 && residents[v.residentIdx])
+      ? `<span style="font-size:11px;background:var(--primary-light);color:var(--primary);padding:1px 6px;border-radius:8px;margin-right:4px;">${escapeHtml(residents[v.residentIdx].name)}</span>` : "";
+    const chips = [];
+    if (v.bp_sys && v.bp_dia) chips.push(`<div class="vital-value-chip"><span class="vl">血圧 </span><span class="vv" style="color:#dc2626">${v.bp_sys}/${v.bp_dia}</span><span class="vl"> mmHg</span></div>`);
+    if (v.temp  != null) chips.push(`<div class="vital-value-chip"><span class="vl">体温 </span><span class="vv" style="color:#d97706">${v.temp}</span><span class="vl"> °C</span></div>`);
+    if (v.spo2  != null) chips.push(`<div class="vital-value-chip"><span class="vl">SpO₂ </span><span class="vv" style="color:#0891b2">${v.spo2}</span><span class="vl"> %</span></div>`);
+    if (v.pulse != null) chips.push(`<div class="vital-value-chip"><span class="vl">脈拍 </span><span class="vv" style="color:#16a34a">${v.pulse}</span><span class="vl"> bpm</span></div>`);
+    return `<div class="vital-record-entry">
+      <div class="vital-record-header">
+        <div class="vital-record-time">${residentLabel}${v.time}</div>
+        <button class="record-del-btn" onclick="deleteVital(${globalIdx})">&times;</button>
+      </div>
+      <div class="vital-values-grid">${chips.join("")}</div>
+      ${v.memo ? `<div class="record-entry-memo" style="margin-top:6px;">${escapeHtml(v.memo)}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function deleteVital(idx) {
+  if (confirm("このバイタル記録を削除しますか？")) {
+    vitals.splice(idx, 1);
+    saveVitals();
+    renderVitalSummary();
+    renderVitalList();
+  }
+}
+
+function openVitalForm() {
+  const sel = document.getElementById("record-resident-select");
+  if (residents.length > 0 && sel.value === "") {
+    alert("利用者を選択してください");
+    return;
+  }
+  document.getElementById("vital-time-input").value = recordFormatTimeNow();
+  ["vital-bp-sys","vital-bp-dia","vital-temp","vital-spo2","vital-pulse","vital-memo-input"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("vital-form-modal").classList.add("active");
+}
+
+function closeVitalForm() {
+  document.getElementById("vital-form-modal").classList.remove("active");
+}
+
+function saveVital() {
+  const timeVal = document.getElementById("vital-time-input").value;
+  if (!timeVal) { alert("時刻を入力してください"); return; }
+  const bpSys  = document.getElementById("vital-bp-sys").value;
+  const bpDia  = document.getElementById("vital-bp-dia").value;
+  const tempV  = document.getElementById("vital-temp").value;
+  const spo2V  = document.getElementById("vital-spo2").value;
+  const pulseV = document.getElementById("vital-pulse").value;
+  if (!bpSys && !bpDia && !tempV && !spo2V && !pulseV) {
+    alert("少なくとも1項目を入力してください");
+    return;
+  }
+  const sel = document.getElementById("record-resident-select");
+  const vital = {
+    residentIdx: sel.value !== "" ? parseInt(sel.value) : -1,
+    date: currentRecordDate,
+    time: timeVal,
+    memo: document.getElementById("vital-memo-input").value.trim()
+  };
+  if (bpSys)  vital.bp_sys = parseInt(bpSys);
+  if (bpDia)  vital.bp_dia = parseInt(bpDia);
+  if (tempV)  vital.temp   = parseFloat(parseFloat(tempV).toFixed(1));
+  if (spo2V)  vital.spo2   = parseInt(spo2V);
+  if (pulseV) vital.pulse  = parseInt(pulseV);
+  vitals.push(vital);
+  saveVitals();
+  closeVitalForm();
+  renderVitalSummary();
+  renderVitalList();
+}
+
+// ========== ユーティリティ ==========
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
